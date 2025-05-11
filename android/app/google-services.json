@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "699455540180",
+    "project_id": "mr-ca-virtuals",
+    "storage_bucket": "mr-ca-virtuals.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699455540180:android:a6cb466ca56063781d6441",
+        "android_client_info": {
+          "package_name": "com.kirubakaran.mrcavirtuals"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzZZsCgU0hTXQUGBjBtswjigB4uUnIAB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:699455540180:android:b669a1a6fe2a2c2a1d6441",
+        "android_client_info": {
+          "package_name": "com.kirubakaran.mrcavirtualsadmin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzZZsCgU0hTXQUGBjBtswjigB4uUnIAB0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
