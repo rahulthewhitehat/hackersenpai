@@ -1,15 +1,26 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_portal/flutter_portal.dart';
 import 'package:mrcavirtuals/services/auth_service.dart';
 import 'package:mrcavirtuals/splash_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:secure_content/secure_content.dart';
 import 'providers/auth_provider.dart';
 import 'providers/student_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MyApp());
+
+  if (Platform.isAndroid) {
+    SecureContent().preventScreenshotAndroid(true);
+  }
+  runApp(
+      Portal(
+          child: MyApp()
+      ));
 }
 
 class MyApp extends StatelessWidget {
