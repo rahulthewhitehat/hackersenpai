@@ -33,29 +33,43 @@ class DashboardScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text(
-            'Dashboard', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          'Dashboard',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 22,
+            color: Colors.white,
+            letterSpacing: 0.5,
+          ),
+        ),
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blue[800]!, Colors.blue[600]!],
+              colors: [Colors.blueAccent, Colors.cyanAccent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
+              bottomLeft: Radius.circular(24),
+              bottomRight: Radius.circular(24),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.blueAccent.withOpacity(0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white),
+            icon: const Icon(Icons.logout, color: Colors.white, size: 26),
             onPressed: () async {
               await authProvider.signOut();
               studentProvider.clearData();
@@ -73,23 +87,23 @@ class DashboardScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Student info card
+            // Student info card with neumorphic effect
             Container(
               padding: const EdgeInsets.all(24),
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Colors.blue[700]!, Colors.blue[500]!],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
-                    blurRadius: 15,
-                    spreadRadius: 1,
-                    offset: const Offset(0, 5),
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withOpacity(0.7),
+                    blurRadius: 10,
+                    offset: const Offset(-4, -4),
                   ),
                 ],
               ),
@@ -99,21 +113,27 @@ class DashboardScreen extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 60,
-                        height: 60,
+                        width: 64,
+                        height: 64,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2),
                           gradient: LinearGradient(
-                            colors: [Colors.blue[400]!, Colors.blue[200]!],
+                            colors: [Colors.blueAccent, Colors.cyanAccent],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blueAccent.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
                         child: const Icon(
                           Icons.person,
                           color: Colors.white,
-                          size: 30,
+                          size: 32,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -124,28 +144,24 @@ class DashboardScreen extends StatelessWidget {
                             Text(
                               "Welcome, ${student.name}",
                               style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.blueAccent,
+                                letterSpacing: -0.5,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               'ID: ${student.studentId}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 14,
-                                color: Colors.white70,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-
                     ],
                   ),
                 ],
@@ -154,17 +170,17 @@ class DashboardScreen extends StatelessWidget {
 
             // Course section title
             Padding(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     'My Courses',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
                       color: Colors.grey[800],
-                      letterSpacing: 0.5,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   if (studentProvider.courses.isNotEmpty)
@@ -173,6 +189,7 @@ class DashboardScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                 ],
@@ -199,14 +216,15 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.auto_stories,
-                      size: 72,
+                      size: 80,
                       color: Colors.grey[300],
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'No courses assigned yet',
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -216,6 +234,7 @@ class DashboardScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[500],
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],
@@ -234,13 +253,14 @@ class DashboardScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => CourseScreen(courseId: course.id),
+                            builder: (_) =>
+                                CourseScreen(courseId: course.id),
                           ),
                         );
                       },
                     );
                   }),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),

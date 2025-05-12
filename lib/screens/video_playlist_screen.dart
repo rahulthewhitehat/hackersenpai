@@ -70,8 +70,11 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   @override
   void didChangeMetrics() {
     if (_isInitialized && _currentVideo != null) {
-      final orientation = MediaQuery.of(context).orientation;
-      final isFullScreen = orientation == Orientation.landscape || _controller.value.isFullScreen;
+      final orientation = MediaQuery
+          .of(context)
+          .orientation;
+      final isFullScreen = orientation == Orientation.landscape ||
+          _controller.value.isFullScreen;
       if (isFullScreen != _isFullScreen) {
         setState(() {
           _isFullScreen = isFullScreen;
@@ -82,20 +85,23 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   }
 
   void _updateWatermarkOverlay() {
-    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+    final studentProvider = Provider.of<StudentProvider>(
+        context, listen: false);
     final student = studentProvider.student;
-    final watermarkText = "${student?.email ?? ''}\n${student?.studentId ?? ''}";
+    final watermarkText = "${student?.email ?? ''}\n${student?.studentId ??
+        ''}";
 
     if (_isFullScreen) {
       _removeWatermarkOverlay();
       _watermarkOverlay = OverlayEntry(
-        builder: (context) => Positioned.fill(
-          child: FloatingWatermark(
-            text: watermarkText,
-            opacity: 0.2,
-            constrainToPlayer: false,
-          ),
-        ),
+        builder: (context) =>
+            Positioned.fill(
+              child: FloatingWatermark(
+                text: watermarkText,
+                opacity: 0.2,
+                constrainToPlayer: false,
+              ),
+            ),
       );
       Overlay.of(context).insert(_watermarkOverlay!);
     } else {
@@ -110,7 +116,8 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
 
   Future<void> _initializeScreen() async {
     try {
-      final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+      final studentProvider = Provider.of<StudentProvider>(
+          context, listen: false);
 
       // Find current chapter
       final chaptersStream = studentProvider.getChapters();
@@ -191,7 +198,8 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   Future<void> _changeVideo(VideoModel video) async {
     if (_currentVideo?.id == video.id) return;
 
-    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+    final studentProvider = Provider.of<StudentProvider>(
+        context, listen: false);
     studentProvider.selectVideo(video);
 
     setState(() {
@@ -250,12 +258,27 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     return YoutubePlayer(
       controller: _controller,
       showVideoProgressIndicator: true,
-      progressIndicatorColor: Theme.of(context).colorScheme.primary,
+      progressIndicatorColor: Theme
+          .of(context)
+          .colorScheme
+          .primary,
       progressColors: ProgressBarColors(
-        playedColor: Theme.of(context).colorScheme.primary,
-        handleColor: Theme.of(context).colorScheme.primary,
-        bufferedColor: Theme.of(context).colorScheme.primaryContainer,
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+        playedColor: Theme
+            .of(context)
+            .colorScheme
+            .primary,
+        handleColor: Theme
+            .of(context)
+            .colorScheme
+            .primary,
+        bufferedColor: Theme
+            .of(context)
+            .colorScheme
+            .primaryContainer,
+        backgroundColor: Theme
+            .of(context)
+            .colorScheme
+            .surfaceContainerHighest,
       ),
       onReady: () => setState(() {}),
     );
@@ -265,25 +288,33 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
     final student = studentProvider.student;
-    final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+    final isLandscape = MediaQuery
+        .of(context)
+        .orientation == Orientation.landscape;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
     // Prepare watermark text
-    final watermarkText = "${student?.email ?? ''}\n${student?.studentId ?? ''}";
+    final watermarkText = "${student?.email ?? ''}\n${student?.studentId ??
+        ''}";
 
     if (_isLoading) {
       return Scaffold(
+        backgroundColor: Colors.grey[100],
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const CircularProgressIndicator(),
+              CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              ),
               const SizedBox(height: 16),
               Text(
                 'Loading content...',
-                style: theme.textTheme.bodyLarge?.copyWith(
+                style: theme.textTheme.titleMedium?.copyWith(
                   color: colorScheme.onSurface.withOpacity(0.8),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -294,19 +325,29 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
 
     if (_isError) {
       return Scaffold(
+        backgroundColor: Colors.grey[100],
         appBar: AppBar(
-          title: Text(_currentChapter?.name ?? 'Error'),
+          title: Text(
+            _currentChapter?.name ?? 'Error',
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+            ),
+          ),
           centerTitle: true,
           elevation: 0,
+          backgroundColor: Colors.transparent,
           flexibleSpace: Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  colorScheme.primary,
-                  colorScheme.primaryContainer,
-                ],
+                colors: [Colors.blueAccent, Colors.cyanAccent],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
             ),
           ),
@@ -317,31 +358,36 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: colorScheme.error),
+                Icon(
+                  Icons.error_outline,
+                  size: 72,
+                  color: colorScheme.error.withOpacity(0.8),
+                ),
                 const SizedBox(height: 24),
                 Text(
                   _errorMessage,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.error,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: _retryPlayback,
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                ElevatedButton.icon(
+                  onPressed: _retryPlayback,
+                  icon: const Icon(Icons.refresh, size: 20),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ],
+                    elevation: 4,
+                    shadowColor: colorScheme.primary.withOpacity(0.3),
+                  ),
                 ),
               ],
             ),
@@ -353,27 +399,32 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     return YoutubePlayerBuilder(
       player: _buildVideoPlayer(),
       builder: (context, player) {
-        Widget playerWithWatermark = _buildVideoPlayerWithWatermark(player, watermarkText);
+        Widget playerWithWatermark = _buildVideoPlayerWithWatermark(
+            player, watermarkText);
 
         if (isLandscape) {
           return Scaffold(
+            backgroundColor: Colors.black,
             body: Stack(
               children: [
-                // Player with watermark (watermark only in portrait via _buildVideoPlayerWithWatermark)
+                // Player with watermark
                 Positioned.fill(child: playerWithWatermark),
 
                 // Playlist toggle button
                 if (_isFullScreen)
                   Positioned(
-                    top: 16,
-                    right: 16,
+                    top: 20,
+                    right: 20,
                     child: FloatingActionButton(
                       mini: true,
-                      backgroundColor: Colors.black.withOpacity(0.7),
+                      backgroundColor: Colors.black.withOpacity(0.8),
+                      elevation: 4,
                       onPressed: _togglePlaylistVisibility,
                       child: Icon(
-                        _showPlaylistInLandscape ? Icons.close : Icons.playlist_play,
+                        _showPlaylistInLandscape ? Icons.close : Icons
+                            .playlist_play,
                         color: Colors.white,
+                        size: 24,
                       ),
                     ),
                   ),
@@ -387,19 +438,20 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                   bottom: 0,
                   width: 300,
                   child: Material(
-                    elevation: 8,
+                    elevation: 12,
+                    color: Colors.transparent,
                     child: Container(
                       decoration: BoxDecoration(
-                        color: colorScheme.surface,
+                        color: Colors.white,
                         borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(12),
-                          bottomLeft: Radius.circular(12),
+                          topLeft: Radius.circular(20),
+                          bottomLeft: Radius.circular(20),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withOpacity(0.15),
                             blurRadius: 12,
-                            spreadRadius: 2,
+                            offset: const Offset(-4, 0),
                           ),
                         ],
                       ),
@@ -407,11 +459,19 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                         children: [
                           // Chapter name header
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
                             decoration: BoxDecoration(
-                              color: colorScheme.primary,
+                              gradient: LinearGradient(
+                                colors: [
+                                  colorScheme.primary,
+                                  colorScheme.primaryContainer
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
                               borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(12),
+                                topLeft: Radius.circular(20),
                               ),
                             ),
                             child: Row(
@@ -419,16 +479,20 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                                 Expanded(
                                   child: Text(
                                     _currentChapter?.name ?? 'Videos',
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      color: colorScheme.onPrimary,
-                                      fontWeight: FontWeight.bold,
+                                    style: theme.textTheme.titleMedium
+                                        ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 18,
                                     ),
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.close, color: colorScheme.onPrimary),
+                                  icon: const Icon(
+                                      Icons.close, color: Colors.white,
+                                      size: 24),
                                   onPressed: _togglePlaylistVisibility,
                                 ),
                               ],
@@ -451,23 +515,30 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
 
         // Portrait mode
         return Scaffold(
+          backgroundColor: Colors.grey[100],
           appBar: AppBar(
             title: Text(
               _currentChapter?.name ?? 'Video Player',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                letterSpacing: -0.5,
+              ),
             ),
             centerTitle: true,
             elevation: 0,
+            backgroundColor: Colors.transparent,
             flexibleSpace: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Color(0xFF2196F3), // Blue
-                    Color(0xFF2196F3), //
-                    Color(0xFF64B5F6), // Light Blue
-                  ],
+                  colors: [Colors.blueAccent, Colors.cyanAccent],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(24),
+                  bottomRight: Radius.circular(24),
                 ),
               ),
             ),
@@ -477,7 +548,21 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
               // Video Player with watermark
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: playerWithWatermark,
+                child: Container(
+                  decoration: BoxDecoration(
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: playerWithWatermark,
+                  ),
+                ),
               ),
 
               // Video info
@@ -492,7 +577,10 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                         Text(
                           _currentVideo!.name,
                           style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
+                            color: colorScheme.onSurface,
+                            fontSize: 20,
+                            letterSpacing: -0.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -502,6 +590,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                             _currentVideo!.description,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: colorScheme.onSurface.withOpacity(0.7),
+                              fontWeight: FontWeight.w400,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -513,23 +602,35 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
 
               // Playlist header
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
+                  color: Colors.white,
                   border: Border(
                     bottom: BorderSide(
                       color: colorScheme.surfaceContainerHighest,
-                      width: 1,
+                      width: 1.5,
                     ),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.playlist_play, color: colorScheme.primary),
+                    Icon(Icons.playlist_play, color: colorScheme.primary,
+                        size: 26),
                     const SizedBox(width: 8),
                     Text(
                       'Playlist',
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                        fontSize: 18,
                       ),
                     ),
                     const Spacer(),
@@ -537,6 +638,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                       _currentChapter?.name ?? '',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurface.withOpacity(0.6),
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -566,12 +668,17 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+                Icon(
+                  Icons.error_outline,
+                  size: 56,
+                  color: colorScheme.error.withOpacity(0.8),
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Error loading videos',
-                  style: theme.textTheme.bodyLarge?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.error,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -580,7 +687,12 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
         }
 
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+            ),
+          );
         }
 
         final videos = snapshot.data!;
@@ -592,14 +704,15 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
               children: [
                 Icon(
                   Icons.videocam_off,
-                  size: 48,
+                  size: 56,
                   color: colorScheme.onSurface.withOpacity(0.5),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   'No videos available',
-                  style: theme.textTheme.bodyLarge?.copyWith(
+                  style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.onSurface.withOpacity(0.7),
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -609,11 +722,12 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
 
         return ListView.separated(
           itemCount: videos.length,
-          padding: const EdgeInsets.only(bottom: 24, top: 8),
-          separatorBuilder: (context, index) => const SizedBox(height: 4),
+          padding: const EdgeInsets.only(bottom: 32, top: 12),
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final video = videos[index];
-            final isSelected = _currentVideo != null && _currentVideo!.id == video.id;
+            final isSelected = _currentVideo != null &&
+                _currentVideo!.id == video.id;
 
             return VideoListItem(
               video: video,
