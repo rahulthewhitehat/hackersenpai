@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
@@ -32,7 +33,9 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   bool _showPlaylistInLandscape = false;
   double _playlistWidth = 0.0;
   bool _isInitialized = false;
-
+  bool _isFullScreen = false;
+  OverlayEntry? _watermarkOverlay;
+  final GlobalKey _videoPlayerKey = GlobalKey();
 
   @override
   void initState() {
@@ -53,6 +56,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _removeWatermarkOverlay();
     if (_isInitialized) {
       _controller.dispose();
     }
@@ -66,8 +70,42 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   @override
   void didChangeMetrics() {
     if (_isInitialized && _currentVideo != null) {
-      setState(() {});
+      final orientation = MediaQuery.of(context).orientation;
+      final isFullScreen = orientation == Orientation.landscape || _controller.value.isFullScreen;
+      if (isFullScreen != _isFullScreen) {
+        setState(() {
+          _isFullScreen = isFullScreen;
+        });
+        _updateWatermarkOverlay();
+      }
     }
+  }
+
+  void _updateWatermarkOverlay() {
+    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+    final student = studentProvider.student;
+    final watermarkText = "${student?.email ?? ''}\n${student?.studentId ?? ''}";
+
+    if (_isFullScreen) {
+      _removeWatermarkOverlay();
+      _watermarkOverlay = OverlayEntry(
+        builder: (context) => Positioned.fill(
+          child: FloatingWatermark(
+            text: watermarkText,
+            opacity: 0.2,
+            constrainToPlayer: false,
+          ),
+        ),
+      );
+      Overlay.of(context).insert(_watermarkOverlay!);
+    } else {
+      _removeWatermarkOverlay();
+    }
+  }
+
+  void _removeWatermarkOverlay() {
+    _watermarkOverlay?.remove();
+    _watermarkOverlay = null;
   }
 
   Future<void> _initializeScreen() async {
@@ -106,6 +144,9 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
             ),
           );
 
+          // Add listener to detect fullscreen changes
+          _controller.addListener(_onControllerUpdate);
+
           _isInitialized = true;
         } else {
           setState(() {
@@ -115,7 +156,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
         }
       }
     } catch (e) {
-      print('Error initializing screen: $e');
+      //print('Error initializing screen: $e');
       setState(() {
         _isError = true;
         _errorMessage = 'Failed to load content: ${e.toString()}';
@@ -129,13 +170,23 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     }
   }
 
+  void _onControllerUpdate() {
+    // Update fullscreen state when YouTube player state changes
+    final isFullScreenFromController = _controller.value.isFullScreen;
+    if (isFullScreenFromController != _isFullScreen) {
+      setState(() {
+        _isFullScreen = isFullScreenFromController;
+      });
+      _updateWatermarkOverlay();
+    }
+  }
+
   void _togglePlaylistVisibility() {
     setState(() {
       _showPlaylistInLandscape = !_showPlaylistInLandscape;
       _playlistWidth = _showPlaylistInLandscape ? 300.0 : 0.0;
     });
   }
-
 
   Future<void> _changeVideo(VideoModel video) async {
     if (_currentVideo?.id == video.id) return;
@@ -151,8 +202,9 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     try {
       _controller.load(video.videoId);
       _controller.play();
+      _updateWatermarkOverlay(); // Update watermark when video changes
     } catch (e) {
-      print('Error changing video: $e');
+      //print('Error changing video: $e');
       setState(() {
         _isError = true;
         _errorMessage = 'Failed to load video: ${e.toString()}';
@@ -175,6 +227,40 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     }
   }
 
+  Widget _buildVideoPlayerWithWatermark(Widget player, String watermarkText) {
+    return Stack(
+      key: _videoPlayerKey,
+      children: [
+        // The YouTube player
+        player,
+        // Watermark overlay constrained to player area (only in portrait)
+        if (!_isFullScreen)
+          Positioned.fill(
+            child: FloatingWatermark(
+              text: watermarkText,
+              opacity: 0.2,
+              constrainToPlayer: true,
+            ),
+          ),
+      ],
+    );
+  }
+
+  YoutubePlayer _buildVideoPlayer() {
+    return YoutubePlayer(
+      controller: _controller,
+      showVideoProgressIndicator: true,
+      progressIndicatorColor: Theme.of(context).colorScheme.primary,
+      progressColors: ProgressBarColors(
+        playedColor: Theme.of(context).colorScheme.primary,
+        handleColor: Theme.of(context).colorScheme.primary,
+        bufferedColor: Theme.of(context).colorScheme.primaryContainer,
+        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+      ),
+      onReady: () => setState(() {}),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
@@ -182,6 +268,9 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // Prepare watermark text
+    final watermarkText = "${student?.email ?? ''}\n${student?.studentId ?? ''}";
 
     if (_isLoading) {
       return Scaffold(
@@ -262,39 +351,32 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     }
 
     return YoutubePlayerBuilder(
-      player: YoutubePlayer(
-        controller: _controller,
-        showVideoProgressIndicator: true,
-        progressIndicatorColor: colorScheme.primary,
-        progressColors: ProgressBarColors(
-          playedColor: colorScheme.primary,
-          handleColor: colorScheme.primary,
-          bufferedColor: colorScheme.primaryContainer,
-          backgroundColor: colorScheme.surfaceContainerHighest,
-        ),
-        onReady: () => setState(() {}),
-      ),
+      player: _buildVideoPlayer(),
       builder: (context, player) {
+        Widget playerWithWatermark = _buildVideoPlayerWithWatermark(player, watermarkText);
+
         if (isLandscape) {
           return Scaffold(
             body: Stack(
               children: [
-                Positioned.fill(child: player),
+                // Player with watermark (watermark only in portrait via _buildVideoPlayerWithWatermark)
+                Positioned.fill(child: playerWithWatermark),
 
                 // Playlist toggle button
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: FloatingActionButton(
-                    mini: true,
-                    backgroundColor: Colors.black.withOpacity(0.7),
-                    onPressed: _togglePlaylistVisibility,
-                    child: Icon(
-                      _showPlaylistInLandscape ? Icons.close : Icons.playlist_play,
-                      color: Colors.white,
+                if (_isFullScreen)
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: FloatingActionButton(
+                      mini: true,
+                      backgroundColor: Colors.black.withOpacity(0.7),
+                      onPressed: _togglePlaylistVisibility,
+                      child: Icon(
+                        _showPlaylistInLandscape ? Icons.close : Icons.playlist_play,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ),
 
                 // Sliding playlist
                 AnimatedPositioned(
@@ -362,14 +444,6 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                     ),
                   ),
                 ),
-
-                // Watermark
-                Positioned.fill(
-                  child: FloatingWatermark(
-                    text: "${student?.email}\n${student?.studentId}",
-                    opacity: 0.15,
-                  ),
-                ),
               ],
             ),
           );
@@ -378,7 +452,10 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
         // Portrait mode
         return Scaffold(
           appBar: AppBar(
-            title: Text(_currentChapter?.name ?? 'Video Player', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),),
+            title: Text(
+              _currentChapter?.name ?? 'Video Player',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
+            ),
             centerTitle: true,
             elevation: 0,
             flexibleSpace: Container(
@@ -394,14 +471,13 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                 ),
               ),
             ),
-            actions: [],
           ),
           body: Column(
             children: [
-              // Video Player
+              // Video Player with watermark
               AspectRatio(
                 aspectRatio: 16 / 9,
-                child: player,
+                child: playerWithWatermark,
               ),
 
               // Video info
@@ -434,6 +510,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                     ),
                   ),
                 ),
+
               // Playlist header
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

@@ -1,3 +1,5 @@
+
+
 class VideoModel {
   final String id;
   final String name;
@@ -5,7 +7,7 @@ class VideoModel {
   final String link;
   final String courseId;
   final String chapterId;
-  final int order; // Add this field
+  final int order;
 
   VideoModel({
     required this.id,
@@ -14,7 +16,7 @@ class VideoModel {
     required this.link,
     required this.courseId,
     required this.chapterId,
-    required this.order, // Add to constructor
+    required this.order,
   });
 
   factory VideoModel.fromMap(String id, Map<String, dynamic> data) {
@@ -22,7 +24,7 @@ class VideoModel {
       id: id,
       name: data['name'] ?? '',
       description: data['description'] ?? '',
-      link: data['link'] ?? '',
+      link: data['link'],
       courseId: data['course_id'] ?? '',
       chapterId: data['chapter_id'] ?? '',
       order: data['order'] ?? 0, // Add to fromMap

@@ -6,10 +6,10 @@ class CourseTile extends StatelessWidget {
   final VoidCallback onTap;
 
   const CourseTile({
-    Key? key,
+    super.key,
     required this.course,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

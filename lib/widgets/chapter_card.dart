@@ -7,11 +7,11 @@ class ChapterCard extends StatelessWidget {
   final bool isSelected;
 
   const ChapterCard({
-    Key? key,
+    super.key,
     required this.chapter,
     required this.onTap,
     this.isSelected = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -22,7 +22,7 @@ class AuthService {
       );
       return result.user;
     } catch (e) {
-      print('Error signing in: $e');
+      //print('Error signing in: $e');
       rethrow;
     }
   }
@@ -61,7 +61,7 @@ class AuthService {
 
       return userCredential.user;
     } catch (e) {
-      print('Error signing in with Google: $e');
+      //print('Error signing in with Google: $e');
       rethrow;
     }
   }

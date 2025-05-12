@@ -16,7 +16,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting student data: $e');
+      //print('Error getting student data: $e');
       rethrow;
     }
   }
@@ -30,7 +30,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting course data: $e');
+      //print('Error getting course data: $e');
       rethrow;
     }
   }
@@ -47,7 +47,7 @@ class FirestoreService {
       }
       return courses;
     } catch (e) {
-      print('Error getting student courses: $e');
+      //print('Error getting student courses: $e');
       rethrow;
     }
   }
