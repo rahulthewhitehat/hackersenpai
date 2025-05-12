@@ -58,6 +58,7 @@ class FirestoreService {
         .collection('courses')
         .doc(courseId)
         .collection('chapters')
+        .orderBy('order') // Add this line to sort by order
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
@@ -74,6 +75,7 @@ class FirestoreService {
         .collection('chapters')
         .doc(chapterId)
         .collection('videos')
+        .orderBy('order') // Add this line to sort by order
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {

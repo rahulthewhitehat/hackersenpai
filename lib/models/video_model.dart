@@ -5,6 +5,7 @@ class VideoModel {
   final String link;
   final String courseId;
   final String chapterId;
+  final int order; // Add this field
 
   VideoModel({
     required this.id,
@@ -13,6 +14,7 @@ class VideoModel {
     required this.link,
     required this.courseId,
     required this.chapterId,
+    required this.order, // Add to constructor
   });
 
   factory VideoModel.fromMap(String id, Map<String, dynamic> data) {
@@ -23,6 +25,7 @@ class VideoModel {
       link: data['link'] ?? '',
       courseId: data['course_id'] ?? '',
       chapterId: data['chapter_id'] ?? '',
+      order: data['order'] ?? 0, // Add to fromMap
     );
   }
 
@@ -36,23 +39,41 @@ class VideoModel {
     };
   }
 
-  // Method to extract video ID from Google Drive link
+  // Method to extract video ID from YouTube link
+  // In VideoModel class, replace the videoId getter with this:
   String get videoId {
-    if (link.contains('drive.google.com')) {
-      final RegExp regExp = RegExp(r'/d/([a-zA-Z0-9_-]+)');
-      final match = regExp.firstMatch(link);
-      if (match != null && match.groupCount >= 1) {
-        return match.group(1)!;
+    try {
+      final uri = Uri.parse(link);
+      if (uri.host.contains('youtube.com') || uri.host.contains('youtu.be')) {
+        // For standard YouTube links like https://www.youtube.com/watch?v=yYX4bvQSqbo
+        if (uri.queryParameters.containsKey('v')) {
+          return uri.queryParameters['v']!;
+        }
+        // For youtu.be links like https://youtu.be/yYX4bvQSqbo
+        else if (uri.pathSegments.isNotEmpty) {
+          return uri.pathSegments.first;
+        }
       }
+      return '';
+    } catch (e) {
+      return '';
     }
-    return '';
   }
 
-  // Method to get direct playable URL for Google Drive videos
-  String get directUrl {
+  // URL for web browser viewing
+  String get browserUrl {
     final id = videoId;
     if (id.isNotEmpty) {
-      return 'https://drive.google.com/uc?export=download&id=$id';
+      return 'https://www.youtube.com/watch?v=$id';
+    }
+    return link;
+  }
+
+  // URL for embedded player
+  String get embedUrl {
+    final id = videoId;
+    if (id.isNotEmpty) {
+      return 'https://www.youtube.com/embed/$id?autoplay=1';
     }
     return link;
   }

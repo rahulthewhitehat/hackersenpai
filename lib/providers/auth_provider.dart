@@ -34,6 +34,18 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    try {
+      _user = await _authService.signInWithGoogle();
+      _setLoading(false);
+      return _user != null;
+    } catch (e) {
+      _setError(_parseFirebaseAuthError(e.toString()));
+      return false;
+    }
+  }
+
   Future<void> signOut() async {
     await _authService.signOut();
     _user = null;
@@ -56,10 +68,10 @@ class AuthProvider with ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
   }
-
   String _parseFirebaseAuthError(String errorMessage) {
-    if (errorMessage.contains('user-not-found')) {
-      return 'No account found with this email';
+    if (errorMessage.contains('user-not-found') ||
+        errorMessage.contains('User not registered')) {
+      return 'Account not registered. Please contact admin.';
     } else if (errorMessage.contains('auth credential is incorrect')) {
       return 'Incorrect password, Try again.';
     } else if (errorMessage.contains('email-already-in-use')) {
@@ -68,6 +80,8 @@ class AuthProvider with ChangeNotifier {
       return 'Password is too weak';
     } else if (errorMessage.contains('network-request-failed')) {
       return 'Network connection error. Check your internet';
+    } else if (errorMessage.contains('sign_in_failed')) {
+      return 'Google sign in failed. Please try again.';
     } else {
       return 'Authentication failed, Contact Admin.';
     }

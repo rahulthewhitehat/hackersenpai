@@ -7,10 +7,10 @@ class FloatingWatermark extends StatefulWidget {
   final double opacity;
 
   const FloatingWatermark({
-    Key? key,
+    super.key,
     required this.text,
     this.opacity = 0.2,
-  }) : super(key: key);
+  });
 
   @override
   _FloatingWatermarkState createState() => _FloatingWatermarkState();
@@ -18,7 +18,8 @@ class FloatingWatermark extends StatefulWidget {
 
 class _FloatingWatermarkState extends State<FloatingWatermark> {
   late Timer _timer;
-  Offset _position = const Offset(20, 20);
+  double _positionX = 0.1;
+  double _positionY = 0.1;
   final _random = math.Random();
 
   @override
@@ -36,10 +37,8 @@ class _FloatingWatermarkState extends State<FloatingWatermark> {
   void _startMoving() {
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
       setState(() {
-        // Generate a slightly different position each time
-        final x = 20 + _random.nextInt(40) - 20;
-        final y = 20 + _random.nextInt(40) - 20;
-        _position = Offset(x.toDouble(), y.toDouble());
+        _positionX = 0.1 + _random.nextDouble() * 0.8;
+        _positionY = 0.1 + _random.nextDouble() * 0.8;
       });
     });
   }
@@ -47,13 +46,10 @@ class _FloatingWatermarkState extends State<FloatingWatermark> {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: AnimatedPositioned(
-        duration: const Duration(seconds: 2),
-        curve: Curves.easeInOut,
-        left: _position.dx,
-        top: _position.dy,
-        child: RotationTransition(
-          turns: const AlwaysStoppedAnimation(-15 / 360),
+      child: Align(
+        alignment: Alignment(_positionX * 2 - 1, _positionY * 2 - 1),
+        child: Transform.rotate(
+          angle: -15 * (math.pi / 180),
           child: Opacity(
             opacity: widget.opacity,
             child: Text(

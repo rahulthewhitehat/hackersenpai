@@ -9,9 +9,9 @@ class CourseScreen extends StatelessWidget {
   final String courseId;
 
   const CourseScreen({
-    Key? key,
+    super.key,
     required this.courseId,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
