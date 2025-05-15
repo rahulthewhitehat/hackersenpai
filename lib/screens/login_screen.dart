@@ -20,6 +20,30 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
 
   @override
+  void initState() {
+    super.initState();
+    // Check if we have a sign out message to display
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (authProvider.showSignOutMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Successfully signed out',
+              style: TextStyle(fontSize: 14), // Smaller text also helps reduce height
+            ),
+            backgroundColor: Colors.green,
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
+            behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
+            duration: Duration(seconds: 3),
+          ),
+        );
+        authProvider.clearSignOutMessage();
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -34,8 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final studentProvider = Provider.of<StudentProvider>(
-        context, listen: false);
+    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
 
     final success = await authProvider.signIn(
       _emailController.text.trim(),
@@ -52,11 +75,21 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (_) => DashboardScreen(),
           ),
         );
-      } else {
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(studentProvider.error)),
+          SnackBar(
+            content: Text(studentProvider.error),
+            backgroundColor: Colors.red,
+          ),
         );
       }
+    } else if (mounted && authProvider.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage!),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
 
     if (mounted) {
@@ -72,8 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final studentProvider = Provider.of<StudentProvider>(
-        context, listen: false);
+    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
 
     final success = await authProvider.signInWithGoogle();
 
@@ -87,11 +119,21 @@ class _LoginScreenState extends State<LoginScreen> {
             builder: (_) => DashboardScreen(),
           ),
         );
-      } else {
+      } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(studentProvider.error)),
+          SnackBar(
+            content: Text(studentProvider.error),
+            backgroundColor: Colors.red,
+          ),
         );
       }
+    } else if (mounted && authProvider.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage!),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
 
     if (mounted) {
@@ -172,10 +214,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Email field with smooth transitions
+                      // Email field with validation
                       TextFormField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Email is required';
+                          }
+                          if (!value.contains('@') || !value.contains('.')) {
+                            return 'Enter a valid email address';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                           labelText: 'Email',
@@ -183,8 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w500,
                           ),
-                          prefixIcon: Icon(Icons.email,
-                              color: Colors.grey[600]),
+                          prefixIcon: Icon(Icons.email, color: Colors.grey[600]),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide.none,
@@ -210,10 +260,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Password field with consistent styling
+                      // Password field with validation
                       TextFormField(
                         controller: _passwordController,
                         obscureText: _obscurePassword,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Password is required';
+                          }
+                          return null;
+                        },
                         decoration: InputDecoration(
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                           labelText: 'Password',
@@ -230,9 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.grey[600],
                             ),
                             onPressed: () =>
-                                setState(
-                                        () =>
-                                    _obscurePassword = !_obscurePassword),
+                                setState(() => _obscurePassword = !_obscurePassword),
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
