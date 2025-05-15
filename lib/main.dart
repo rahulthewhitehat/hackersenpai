@@ -14,7 +14,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  // Check if device is rooted or jailbroken
+  // Check if device is rooted...
+
   bool isDeviceRooted = false;
 
   if (Platform.isAndroid) {
@@ -90,7 +91,7 @@ class RootedDeviceScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'For security reasons, this app cannot run on rooted or jailbroken devices. We prioritize the safety of your data and our services.',
+                      'For security reasons, this app cannot run on rooted or jailbroken devices. We prioritize the safety of our data. Kindly unroot or try using the app in another device',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 16,

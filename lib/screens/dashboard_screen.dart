@@ -185,7 +185,7 @@ class DashboardScreen extends StatelessWidget {
                   ),
                   if (studentProvider.courses.isNotEmpty)
                     Text(
-                      '${studentProvider.courses.length} Total',
+                      '${studentProvider.courses.length} Active',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[600],
@@ -221,7 +221,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'No courses assigned yet',
+                      'No active courses available',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -230,7 +230,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Check back later or contact admin',
+                      'Your courses may have expired or not yet assigned',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[500],
@@ -269,5 +269,4 @@ class DashboardScreen extends StatelessWidget {
       ),
     );
   }
-
 }

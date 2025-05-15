@@ -10,6 +10,7 @@ class StudentProvider with ChangeNotifier {
 
   StudentModel? _student;
   List<CourseModel> _courses = [];
+  List<CourseModel> _activeCourses = []; // Added for active courses only
   String? _selectedCourseId;
   String? _selectedChapterId;
   VideoModel? _selectedVideo;
@@ -19,7 +20,7 @@ class StudentProvider with ChangeNotifier {
 
   // Getters
   StudentModel? get student => _student;
-  List<CourseModel> get courses => _courses;
+  List<CourseModel> get courses => _activeCourses; // Changed to return only active courses
   String? get selectedCourseId => _selectedCourseId;
   String? get selectedChapterId => _selectedChapterId;
   VideoModel? get selectedVideo => _selectedVideo;
@@ -40,8 +41,11 @@ class StudentProvider with ChangeNotifier {
 
       _student = studentData;
 
-      // Get courses
+      // Get courses with expiry dates
       _courses = await _firestoreService.getStudentCourses(_student!.subjects);
+
+      // Filter out expired courses
+      _filterActiveCourses();
 
       _setLoading(false);
       return true;
@@ -49,6 +53,29 @@ class StudentProvider with ChangeNotifier {
       _setError('Failed to load student data: $e');
       return false;
     }
+  }
+
+  // Filter active courses based on expiry date
+  void _filterActiveCourses() {
+    final now = DateTime.now();
+    _activeCourses = _courses.where((course) {
+      // If no expiry date, consider it as active
+      if (course.expiryDate == null || course.expiryDate!.isEmpty) {
+        return true;
+      }
+
+      try {
+        // Parse the expiry date
+        final expiry = DateTime.parse(course.expiryDate!);
+        // Course is active if expiry date is in the future
+        return expiry.isAfter(now);
+      } catch (e) {
+        // If parsing fails, consider as active
+        return true;
+      }
+    }).toList();
+
+    notifyListeners();
   }
 
   // Select a course
@@ -96,6 +123,7 @@ class StudentProvider with ChangeNotifier {
   void clearData() {
     _student = null;
     _courses = [];
+    _activeCourses = [];
     resetSelection();
   }
 

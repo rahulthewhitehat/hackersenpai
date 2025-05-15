@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // App title with modern typography
                 const Text(
-                  'Mr.CA Virtuals',
+                  'Mr CA Virtuals',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 34,

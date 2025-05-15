@@ -1,33 +1,51 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class StudentModel {
-  final String uid;
-  final String email;
-  final String name;
+  final String id;
   final String studentId;
-  final List<String> subjects;
+  final String name;
+  final String email;
+  final DateTime lastLogin;
+  final Map<String, String> subjects; // Changed from List<String> to Map<String, String>
 
   StudentModel({
-    required this.uid,
-    required this.email,
-    required this.name,
+    required this.id,
     required this.studentId,
+    required this.name,
+    required this.email,
+    required this.lastLogin,
     required this.subjects,
   });
 
-  factory StudentModel.fromMap(String uid, Map<String, dynamic> data) {
+  factory StudentModel.fromMap(String id, Map<String, dynamic> data) {
+    // Convert the subjects map
+    Map<String, String> subjectsMap = {};
+    if (data['subjects'] != null) {
+      // Cast the Firestore map to the correct type
+      Map<String, dynamic> rawSubjects = data['subjects'] as Map<String, dynamic>;
+      rawSubjects.forEach((key, value) {
+        subjectsMap[key] = value.toString();
+      });
+    }
+
     return StudentModel(
-      uid: uid,
-      email: data['email'] ?? '',
-      name: data['name'] ?? '',
+      id: id,
       studentId: data['student_id'] ?? '',
-      subjects: List<String>.from(data['subjects'] ?? []),
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      lastLogin: data['last_login'] != null
+          ? (data['last_login'] as Timestamp).toDate()
+          : DateTime.now(),
+      subjects: subjectsMap,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'email': email,
-      'name': name,
       'student_id': studentId,
+      'name': name,
+      'email': email,
+      'last_login': Timestamp.fromDate(lastLogin),
       'subjects': subjects,
     };
   }

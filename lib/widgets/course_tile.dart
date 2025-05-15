@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/course_model.dart';
+import 'package:intl/intl.dart';
 
 class CourseTile extends StatelessWidget {
   final CourseModel course;
@@ -11,8 +12,65 @@ class CourseTile extends StatelessWidget {
     required this.onTap,
   });
 
+  // Format expiry date in a user-friendly way
+  String _formatExpiryDate(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return "No expiry date";
+    }
+
+    try {
+      final date = DateTime.parse(dateString);
+      // Format date to "05 Jun 2026" format
+      return DateFormat('dd MMM yyyy').format(date);
+    } catch (e) {
+      return "Invalid date";
+    }
+  }
+
+  // Calculate days remaining until expiry
+  String _getDaysRemaining(String? dateString) {
+    if (dateString == null || dateString.isEmpty) {
+      return "";
+    }
+
+    try {
+      final expiryDate = DateTime.parse(dateString);
+      final now = DateTime.now();
+      final difference = expiryDate.difference(now).inDays;
+
+      if (difference < 0) {
+        return "Expired";
+      } else if (difference == 0) {
+        return "Expires today";
+      } else if (difference == 1) {
+        return "1 day left";
+      } else {
+        return "$difference days left";
+      }
+    } catch (e) {
+      return "";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Get formatted expiry date and days remaining
+    final formattedExpiry = _formatExpiryDate(course.expiryDate);
+    final daysRemaining = _getDaysRemaining(course.expiryDate);
+
+    // Determine text color based on expiry
+    Color expiryTextColor = Colors.green;
+    if (daysRemaining == "Expired") {
+      expiryTextColor = Colors.red;
+    } else if (daysRemaining.contains("day") && int.tryParse(daysRemaining.split(" ")[0]) != null) {
+      int days = int.parse(daysRemaining.split(" ")[0]);
+      if (days <= 7) {
+        expiryTextColor = Colors.orange;
+      } else if (days <= 30) {
+        expiryTextColor = Colors.amber[700]!;
+      }
+    }
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -81,13 +139,32 @@ class CourseTile extends StatelessWidget {
                               letterSpacing: -0.5,
                             ),
                           ),
-                          const SizedBox(height: 6),
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time_rounded,
+                                size: 14,
+                                color: Colors.grey[600],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Expires: $formattedExpiry',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
                           Text(
-                            'Tap to view chapters',
+                            daysRemaining,
                             style: TextStyle(
                               fontSize: 14,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
+                              color: expiryTextColor,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],

@@ -25,6 +25,7 @@ dependencies:
   encrypt: ^5.0.3
   flutter_root_checker: ^1.0.1
   device_info_plus: ^11.4.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

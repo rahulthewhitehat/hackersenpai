@@ -35,14 +35,17 @@ class FirestoreService {
     }
   }
 
-  // Get all courses for a student
-  Future<List<CourseModel>> getStudentCourses(List<String> courseIds) async {
+  // Get all courses for a student using the subjects map
+  Future<List<CourseModel>> getStudentCourses(Map<String, String> subjectsMap) async {
     List<CourseModel> courses = [];
     try {
-      for (String courseId in courseIds) {
+      // For each subject in the map, get the course data
+      for (String courseId in subjectsMap.keys) {
         final course = await getCourseData(courseId);
         if (course != null) {
-          courses.add(course);
+          // Add the expiry date to the course
+          final courseWithExpiry = course.copyWithExpiryDate(subjectsMap[courseId]);
+          courses.add(courseWithExpiry);
         }
       }
       return courses;
