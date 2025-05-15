@@ -78,7 +78,7 @@ class _FloatingWatermarkState extends State<FloatingWatermark> {
                 widget.text,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: Colors.black,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Roboto', // Explicitly set font to ensure consistency
