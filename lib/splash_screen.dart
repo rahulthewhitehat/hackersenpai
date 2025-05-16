@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:mrcavirtuals/screens/dashboard_screen.dart';
 import 'package:mrcavirtuals/screens/login_screen.dart';
@@ -26,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   late Animation<Offset> _titleSlide;
   late Animation<double> _particleScale;
   late Animation<double> _particleOpacity;
-  late Animation<Color?> _backgroundColor;
+  Animation<Color?>? _backgroundColor;
 
   final List<Particle> _particles = [];
 
@@ -35,82 +34,92 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     super.initState();
 
     // Initialize particles
-    for (int i = 0; i < 15; i++) {
+    for (int i = 0; i < 10; i++) { // Reduced particle count to improve performance
       _particles.add(Particle());
     }
 
     // Logo animation (scale + rotation)
     _logoController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1200), // Slightly faster for performance
     )..forward();
 
     _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
-        CurvedAnimation(
-          parent: _logoController,
-          curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
-        ));
+      CurvedAnimation(
+        parent: _logoController,
+        curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
+      ),
+    );
 
-        _logoRotation = Tween<double>(begin: 0, end: 2 * 3.14159).animate(
-        CurvedAnimation(
-          parent: _logoController,
-          curve: const Interval(0.3, 1.0, curve: Curves.easeInOutBack),
-        ));
+    _logoRotation = Tween<double>(begin: 0, end: 2 * 3.14159).animate(
+      CurvedAnimation(
+        parent: _logoController,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeInOutBack),
+      ),
+    );
 
     // Title animation (fade + slide)
     _titleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 800), // Faster for performance
     )..forward();
 
     _titleFade = Tween<double>(begin: 0, end: 1).animate(
-        CurvedAnimation(
-          parent: _titleController,
-          curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
-        ));
+      CurvedAnimation(
+        parent: _titleController,
+        curve: const Interval(0.2, 1.0, curve: Curves.easeInOut),
+      ),
+    );
 
-        _titleSlide = Tween<Offset>(
-        begin: const Offset(0, 0.5),
-    end: Offset.zero,
+    _titleSlide = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
     ).animate(
-    CurvedAnimation(
-    parent: _titleController,
-    curve: Curves.easeOutBack,
-    ),
+      CurvedAnimation(
+        parent: _titleController,
+        curve: Curves.easeOutBack,
+      ),
     );
 
     // Particle animation
     _particleController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 2000),
+      vsync: this,
+      duration: const Duration(milliseconds: 1500), // Adjusted for smoother performance
     )..repeat(reverse: true);
 
     _particleScale = Tween<double>(begin: 0.8, end: 1.2).animate(
-    CurvedAnimation(
-    parent: _particleController,
-    curve: Curves.easeInOut,
-    ));
+      CurvedAnimation(
+        parent: _particleController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
     _particleOpacity = Tween<double>(begin: 0.6, end: 1.0).animate(
-    CurvedAnimation(
-    parent: _particleController,
-    curve: Curves.easeInOut,
-    ));
+      CurvedAnimation(
+        parent: _particleController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    // Background color animation
+    // Background controller initialized, but color set in didChangeDependencies
     _backgroundController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 3000),
+      vsync: this,
+      duration: const Duration(milliseconds: 2500),
     )..repeat(reverse: true);
 
-    _backgroundColor = ColorTween(
-    begin: Colors.blue[100],
-    end: Colors.cyan[100],
-    ).animate(_backgroundController);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-    _checkAuthStatus();
+      _checkAuthStatus();
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize background color animation here to access Theme.of(context)
+    _backgroundColor = ColorTween(
+      begin: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+      end: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
+    ).animate(_backgroundController);
   }
 
   @override
@@ -126,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final studentProvider = Provider.of<StudentProvider>(context, listen: false);
 
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 2)); // Reduced delay for faster loading
 
     if (authProvider.isAuthenticated) {
       final success = await studentProvider.initializeStudent(authProvider.user!.uid);
@@ -154,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       animation: _backgroundController,
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: _backgroundColor.value,
+          backgroundColor: _backgroundColor?.value ?? Theme.of(context).colorScheme.primary.withOpacity(0.1),
           body: Stack(
             children: [
               // Floating particles background
@@ -174,7 +183,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                             height: particle.size,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.blueAccent.withOpacity(0.3),
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
                             ),
                           ),
                         ),
@@ -182,7 +191,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     },
                   ),
                 );
-              }).toList(),
+              }),
 
               Center(
                 child: Column(
@@ -203,7 +212,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                 shape: BoxShape.circle,
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.blueAccent.withOpacity(0.3 * _logoController.value),
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.3 * _logoController.value),
                                     blurRadius: 30,
                                     spreadRadius: 10,
                                   ),
@@ -225,8 +234,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                   padding: const EdgeInsets.all(24),
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    gradient: const LinearGradient(
-                                      colors: [Colors.blueAccent, Colors.cyanAccent],
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Theme.of(context).colorScheme.primary,
+                                        Theme.of(context).colorScheme.secondary,
+                                      ],
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
                                     ),
@@ -238,10 +250,10 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                       ),
                                     ],
                                   ),
-                                  child: const Icon(
+                                  child: Icon(
                                     Icons.school,
                                     size: 80,
-                                    color: Colors.white,
+                                    color: Theme.of(context).colorScheme.onPrimary,
                                   ),
                                 ),
                               ),
@@ -266,8 +278,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                 fontSize: 36,
                                 fontWeight: FontWeight.w900,
                                 foreground: Paint()
-                                  ..shader = const LinearGradient(
-                                    colors: [Colors.blueAccent, Colors.cyan],
+                                  ..shader = LinearGradient(
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.secondary,
+                                    ],
                                   ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
                                 letterSpacing: -0.5,
                               ),
@@ -288,9 +303,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                           return ClipRRect(
                             borderRadius: BorderRadius.circular(2),
                             child: LinearProgressIndicator(
-                              backgroundColor: Colors.blueAccent.withOpacity(0.2),
+                              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
                               valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.blueAccent.withOpacity(_particleOpacity.value),
+                                Theme.of(context).colorScheme.primary.withOpacity(_particleOpacity.value),
                               ),
                               value: _particleController.value,
                             ),
@@ -319,9 +334,9 @@ class Particle {
   Particle()
       : x = _random.nextDouble(),
         y = _random.nextDouble(),
-        size = 5 + _random.nextDouble() * 15,
-        opacity = 0.2 + _random.nextDouble() * 0.8,
-        speed = 0.5 + _random.nextDouble() * 2;
+        size = 5 + _random.nextDouble() * 10, // Smaller particles for performance
+        opacity = 0.2 + _random.nextDouble() * 0.6,
+        speed = 0.5 + _random.nextDouble() * 1.5;
 
   static final Random _random = Random();
 }

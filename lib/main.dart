@@ -9,35 +9,44 @@ import 'package:provider/provider.dart';
 import 'package:secure_content/secure_content.dart';
 import 'providers/auth_provider.dart';
 import 'providers/student_provider.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
-  // Check if device is rooted...
-
   bool isDeviceRooted = false;
 
   if (Platform.isAndroid) {
     isDeviceRooted = FlutterRootChecker.isAndroidRoot;
-    // Enable screenshot prevention for Android
     SecureContent().preventScreenshotAndroid(true);
   } else if (Platform.isIOS) {
     isDeviceRooted = FlutterRootChecker.isIosJailbreak;
   }
 
   if (isDeviceRooted) {
-    // If device is rooted, show warning and exit
     runApp(
-      MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: RootedDeviceScreen(),
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ],
+        child: Consumer<ThemeProvider>(
+          builder: (context, themeProvider, child) {
+            return MaterialApp(
+              debugShowCheckedModeBanner: false,
+              theme: ThemeProvider.lightTheme,
+              darkTheme: ThemeProvider.darkTheme,
+              themeMode: themeProvider.themeMode,
+              home: const RootedDeviceScreen(),
+            );
+          },
+        ),
       ),
     );
   } else {
     runApp(
       Portal(
-        child: MyApp(),
+        child: const MyApp(),
       ),
     );
   }
@@ -48,6 +57,9 @@ class RootedDeviceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -55,8 +67,8 @@ class RootedDeviceScreen extends StatelessWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.blueAccent.shade400,
-              Colors.blue.shade800,
+              colorScheme.primary,
+              colorScheme.primaryContainer,
             ],
           ),
         ),
@@ -69,7 +81,7 @@ class RootedDeviceScreen extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: Column(
@@ -78,24 +90,22 @@ class RootedDeviceScreen extends StatelessWidget {
                     Icon(
                       Icons.security,
                       size: 64,
-                      color: Colors.blueAccent.shade700,
+                      color: colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Security Alert',
-                      style: TextStyle(
-                        fontSize: 24,
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Colors.blue.shade900,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'For security reasons, this app cannot run on rooted or jailbroken devices. We prioritize the safety of our data. Kindly unroot or try using the app in another device',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey.shade700,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface.withOpacity(0.7),
                         height: 1.5,
                       ),
                     ),
@@ -103,23 +113,21 @@ class RootedDeviceScreen extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blueAccent.shade700,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
+                        style: theme.elevatedButtonTheme.style?.copyWith(
+                          backgroundColor: WidgetStateProperty.all(colorScheme.primary),
+                          foregroundColor: WidgetStateProperty.all(colorScheme.onPrimary),
+                          padding: WidgetStateProperty.all(const EdgeInsets.symmetric(vertical: 16)),
+                          shape: WidgetStateProperty.all(RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 2,
-                        ),
-                        child: const Text(
-                          'Exit App',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          )),
                         ),
                         onPressed: () => exit(0),
+                        child: Text(
+                          'EXIT APP',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color: colorScheme.onPrimary,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -142,14 +150,19 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService())),
         ChangeNotifierProvider(create: (_) => StudentProvider()),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
       ],
-      child: MaterialApp(
-        title: 'Mr CA Virtuals',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: const SplashScreen(),
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Mr CA Virtuals',
+            debugShowCheckedModeBanner: false,
+            theme: ThemeProvider.lightTheme,
+            darkTheme: ThemeProvider.darkTheme,
+            themeMode: themeProvider.themeMode,
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

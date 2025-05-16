@@ -9,7 +9,7 @@ class DeviceInfoService {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
-        print("Serial Number ${androidInfo.data}");
+        //print("Serial Number ${androidInfo.data}");
         // Use serialNumber as the primary identifier
         // Fall back to androidId if serialNumber is not available
         if (androidInfo.serialNumber.isNotEmpty &&

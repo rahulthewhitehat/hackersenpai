@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/chapter_model.dart';
 import '../providers/student_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/chapter_card.dart';
 import 'video_playlist_screen.dart';
 
@@ -16,20 +17,21 @@ class CourseScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final course = studentProvider.courses.firstWhere(
           (c) => c.id == courseId,
       orElse: () => throw Exception('Course not found'),
     );
+    final isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
           course.name,
-          style: const TextStyle(
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w800,
-            fontSize: 20,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onPrimary,
             letterSpacing: -0.5,
           ),
         ),
@@ -39,7 +41,10 @@ class CourseScreen extends StatelessWidget {
         flexibleSpace: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.cyanAccent],
+              colors: [
+                Theme.of(context).colorScheme.primary,
+                Theme.of(context).colorScheme.secondary,
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -47,13 +52,6 @@ class CourseScreen extends StatelessWidget {
               bottomLeft: Radius.circular(24),
               bottomRight: Radius.circular(24),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blueAccent.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
           ),
         ),
       ),
@@ -65,16 +63,16 @@ class CourseScreen extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             margin: const EdgeInsets.fromLTRB(16, 16, 16, 12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(isDarkMode ? 0.03 : 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
                 BoxShadow(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(isDarkMode ? 0.5 : 0.7),
                   blurRadius: 10,
                   offset: const Offset(-4, -4),
                 ),
@@ -86,22 +84,25 @@ class CourseScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.blueAccent, Colors.cyanAccent],
+                      colors: [
+                        Theme.of(context).colorScheme.primary,
+                        Theme.of(context).colorScheme.secondary,
+                      ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.blueAccent.withOpacity(0.3),
+                        color: Theme.of(context).colorScheme.primary.withOpacity(isDarkMode ? 0.2 : 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.menu_book,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     size: 28,
                   ),
                 ),
@@ -112,21 +113,17 @@ class CourseScreen extends StatelessWidget {
                     children: [
                       Text(
                         course.name,
-                        style: const TextStyle(
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
-                          color: Colors.blueAccent,
+                          color: Theme.of(context).colorScheme.primary,
                           letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Browse chapters',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
+                        style: Theme.of(context).textTheme.bodyMedium,
                       ),
                     ],
                   ),
@@ -140,10 +137,9 @@ class CourseScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Text(
               'Chapters',
-              style: TextStyle(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
-                color: Colors.grey[800],
                 letterSpacing: -0.5,
               ),
             ),
@@ -167,8 +163,7 @@ class CourseScreen extends StatelessWidget {
                         const SizedBox(height: 16),
                         Text(
                           'Error: ${snapshot.error}',
-                          style: TextStyle(
-                            fontSize: 16,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Theme.of(context).colorScheme.error,
                           ),
@@ -199,25 +194,19 @@ class CourseScreen extends StatelessWidget {
                         Icon(
                           Icons.menu_book_outlined,
                           size: 72,
-                          color: Colors.grey[300],
+                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No chapters available',
-                          style: TextStyle(
-                            fontSize: 18,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey[600],
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Check back later or contact admin',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Colors.grey[500],
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ],
                     ),
@@ -231,19 +220,54 @@ class CourseScreen extends StatelessWidget {
                     final chapter = chapters[index];
                     final isSelected = chapter.id == studentProvider.selectedChapterId;
 
-                    return ChapterCard(
-                      chapter: chapter,
-                      isSelected: isSelected,
-                      onTap: () {
-                        studentProvider.selectChapter(chapter.id);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => VideoPlaylistScreen(
-                              courseId: courseId,
-                              chapterId: chapter.id,
+                    return FutureBuilder<Map<String, int>>(
+                      future: studentProvider.getChapterProgress(chapter.id),
+                      builder: (context, progressSnapshot) {
+                        double completionPercentage = 0.0;
+                        if (progressSnapshot.hasData) {
+                          final totalVideos = progressSnapshot.data!['totalVideos'] ?? 0;
+                          final completedVideos = progressSnapshot.data!['completedVideos'] ?? 0;
+                          completionPercentage = totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0.0;
+                        }
+
+                        return Stack(
+                          children: [
+                            ChapterCard(
+                              chapter: chapter,
+                              isSelected: isSelected,
+                              onTap: () {
+                                studentProvider.selectChapter(chapter.id);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => VideoPlaylistScreen(
+                                      courseId: courseId,
+                                      chapterId: chapter.id,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
-                          ),
+                            if (progressSnapshot.hasData)
+                              Positioned(
+                                right: 24,
+                                top: 16,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    '${completionPercentage.toStringAsFixed(0)}%',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         );
                       },
                     );

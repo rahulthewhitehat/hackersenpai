@@ -41,9 +41,9 @@ class AuthService {
       }
 
       return result.user;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       // Let the specific Firebase error be handled by the provider
-      throw e;
+      rethrow;
     } catch (e) {
       rethrow;
     }
@@ -88,9 +88,9 @@ class AuthService {
       }
 
       return userCredential.user;
-    } on FirebaseAuthException catch (e) {
+    } on FirebaseAuthException {
       await _googleSignIn.signOut();
-      throw e;
+      rethrow;
     } catch (e) {
       await _googleSignIn.signOut();
       rethrow;
@@ -138,7 +138,7 @@ class AuthService {
       return isMatch;
     } catch (e) {
       // Log the error for debugging
-      print('Device verification error: $e');
+      //print('Device verification error: $e');
       // If error occurs during verification, fail safe
       return false;
     }
@@ -150,7 +150,7 @@ class AuthService {
       await _googleSignIn.signOut();
     } catch (e) {
       // Continue sign out process even if Google sign out fails
-      print('Google sign out error: $e');
+      //print('Google sign out error: $e');
     }
     return await _auth.signOut();
   }

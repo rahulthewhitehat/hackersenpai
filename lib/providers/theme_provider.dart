@@ -1,145 +1,104 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/scheduler.dart';
 
-class ThemeProvider extends ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.light;
-  static const String _themeKey = 'theme_mode';
+class ThemeProvider with ChangeNotifier {
+  ThemeMode _themeMode;
 
-  ThemeProvider() {
-    _loadTheme();
-  }
-
-  ThemeMode get themeMode => _themeMode;
+  ThemeProvider()
+      : _themeMode = SchedulerBinding.instance.platformDispatcher.platformBrightness == Brightness.dark
+      ? ThemeMode.dark
+      : ThemeMode.light;
 
   bool get isDarkMode => _themeMode == ThemeMode.dark;
 
-  void toggleTheme() async {
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
     _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
-    await _saveTheme();
   }
 
-  Future<void> _loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDark = prefs.getBool(_themeKey) ?? false;
-    _themeMode = isDark ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
-  }
-
-  Future<void> _saveTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_themeKey, _themeMode == ThemeMode.dark);
-  }
-
-  // Define light theme
-  static ThemeData get lightTheme => ThemeData(
+  static final lightTheme = ThemeData(
     brightness: Brightness.light,
-    primaryColor: Colors.blueAccent,
-    scaffoldBackgroundColor: Colors.grey[100],
     colorScheme: ColorScheme.light(
       primary: Colors.blueAccent,
       secondary: Colors.cyanAccent,
-      surface: Colors.white,
+      surface: Colors.grey[100]!,
+      onPrimary: Colors.white,
+      onSecondary: Colors.black,
       onSurface: Colors.black87,
       error: Colors.red,
-      onError: Colors.white,
-      surfaceContainerHighest: Colors.grey[300]!,
-      outlineVariant: Colors.grey[300]!,
+      errorContainer: Colors.orange,
+      surfaceContainer: Colors.grey[200]!,
+      surfaceContainerHigh: Colors.grey[300]!,
+      outlineVariant: Colors.grey[400]!,
+    ),
+    scaffoldBackgroundColor: Colors.grey[100],
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5),
+      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+    ),
+    iconTheme: const IconThemeData(color: Colors.black87),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Colors.blueAccent),
+        foregroundColor: WidgetStateProperty.all(Colors.white),
+        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        elevation: WidgetStateProperty.all(2),
+      ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: Colors.blueAccent,
+      foregroundColor: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
       backgroundColor: Colors.transparent,
-    ),
-    cardColor: Colors.white,
-    textTheme: TextTheme(
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w800,
-        color: Colors.black87,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Colors.black87,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        color: Colors.grey[600],
-      ),
-    ),
-    iconTheme: IconThemeData(color: Colors.grey[600]),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
     ),
   );
 
-  // Define dark theme
-  static ThemeData get darkTheme => ThemeData(
+  static final darkTheme = ThemeData(
     brightness: Brightness.dark,
-    primaryColor: Colors.blueAccent,
-    scaffoldBackgroundColor: Colors.grey[900],
     colorScheme: ColorScheme.dark(
-      primary: Colors.blueAccent,
-      secondary: Colors.cyanAccent,
-      surface: Colors.grey[800]!,
+      primary: Colors.blueAccent.shade400,
+      secondary: Colors.cyanAccent.shade400,
+      surface: Colors.grey[900]!,
+      onPrimary: Colors.black,
+      onSecondary: Colors.white,
       onSurface: Colors.white,
       error: Colors.redAccent,
-      onError: Colors.black,
-      surfaceContainerHighest: Colors.grey[700]!,
+      errorContainer: Colors.orange[700]!,
+      surfaceContainer: Colors.grey[800]!,
+      surfaceContainerHigh: Colors.grey[700]!,
       outlineVariant: Colors.grey[600]!,
+    ),
+    scaffoldBackgroundColor: Colors.grey[900],
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5),
+      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+    ),
+    iconTheme: const IconThemeData(color: Colors.white),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.all(Colors.blueAccent.shade400),
+        foregroundColor: WidgetStateProperty.all(Colors.white),
+        padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
+        shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        elevation: WidgetStateProperty.all(2),
+      ),
+    ),
+    floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      backgroundColor: Colors.blueAccent,
+      foregroundColor: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
       backgroundColor: Colors.transparent,
-    ),
-    cardColor: Colors.grey[800],
-    textTheme: TextTheme(
-      titleLarge: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w800,
-        color: Colors.white,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Colors.white,
-      ),
-      bodyMedium: TextStyle(
-        fontSize: 14,
-        color: Colors.grey[400],
-      ),
-    ),
-    iconTheme: IconThemeData(color: Colors.grey[400]),
-    elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blueAccent,
-        foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
-    ),
-    outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.grey[800],
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
     ),
   );
 }

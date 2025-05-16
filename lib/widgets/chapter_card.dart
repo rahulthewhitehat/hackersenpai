@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../models/chapter_model.dart';
+import '../providers/theme_provider.dart';
 
 class ChapterCard extends StatelessWidget {
   final ChapterModel chapter;
@@ -15,19 +17,24 @@ class ChapterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: colorScheme.onSurface.withOpacity(isDarkMode ? 0.03 : 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.white.withOpacity(0.7),
+            color: colorScheme.surfaceContainerHighest.withOpacity(isDarkMode ? 0.5 : 0.7),
             blurRadius: 10,
             offset: const Offset(-4, -4),
           ),
@@ -42,15 +49,15 @@ class ChapterCard extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(
-                color: isSelected ? Colors.blueAccent : Colors.transparent,
+                color: isSelected ? colorScheme.primary : Colors.transparent,
                 width: 2,
               ),
               borderRadius: BorderRadius.circular(20),
               gradient: isSelected
                   ? LinearGradient(
                 colors: [
-                  Colors.blueAccent.withOpacity(0.1),
-                  Colors.cyanAccent.withOpacity(0.1),
+                  colorScheme.primary.withOpacity(0.1),
+                  colorScheme.secondary.withOpacity(0.1),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -68,14 +75,14 @@ class ChapterCard extends StatelessWidget {
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: isSelected
-                            ? [Colors.blueAccent, Colors.cyanAccent]
-                            : [Colors.grey.shade200, Colors.grey.shade300],
+                            ? [colorScheme.primary, colorScheme.secondary]
+                            : [colorScheme.surfaceContainer, colorScheme.surfaceContainerHigh],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: colorScheme.onSurface.withOpacity(isDarkMode ? 0.05 : 0.1),
                           blurRadius: 6,
                           offset: const Offset(0, 2),
                         ),
@@ -84,7 +91,7 @@ class ChapterCard extends StatelessWidget {
                     child: Center(
                       child: Icon(
                         Icons.play_lesson,
-                        color: isSelected ? Colors.white : Colors.grey[700],
+                        color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
                         size: 24,
                       ),
                     ),
@@ -96,10 +103,10 @@ class ChapterCard extends StatelessWidget {
                       children: [
                         Text(
                           chapter.name,
-                          style: TextStyle(
+                          style: theme.textTheme.titleMedium?.copyWith(
                             fontSize: 16,
                             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                            color: isSelected ? Colors.blueAccent : Colors.black87,
+                            color: isSelected ? colorScheme.primary : colorScheme.onSurface,
                             letterSpacing: -0.5,
                           ),
                         ),
@@ -109,9 +116,8 @@ class ChapterCard extends StatelessWidget {
                             chapter.description,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.grey[600],
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.6),
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -121,7 +127,7 @@ class ChapterCard extends StatelessWidget {
                   ),
                   Icon(
                     Icons.chevron_right,
-                    color: Colors.grey[500],
+                    color: colorScheme.onSurfaceVariant,
                     size: 28,
                   ),
                 ],

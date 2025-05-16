@@ -138,4 +138,52 @@ class StudentProvider with ChangeNotifier {
     _isLoading = false;
     notifyListeners();
   }
+
+  // Mark a video as completed
+  Future<void> markVideoAsCompleted(VideoModel video) async {
+    if (_student == null || _selectedCourseId == null) return;
+    try {
+      await _firestoreService.markVideoAsCompleted(
+        uid: _student!.id,
+        videoId: video.id,
+        courseId: _selectedCourseId!,
+        chapterId: video.chapterId,
+      );
+      // Update the selected video if it's the one being marked
+      if (_selectedVideo?.id == video.id) {
+        _selectedVideo = VideoModel(
+          id: video.id,
+          name: video.name,
+          description: video.description,
+          videoId: video.videoId,
+          chapterId: video.chapterId,
+          completed: true, link: video.link,courseId: video.courseId, order: video.order,
+        );
+      }
+      notifyListeners();
+    } catch (e) {
+      // Handle error appropriately
+    }
+  }
+
+  // Stream video progress for the current course
+  Stream<List<Map<String, dynamic>>>? getVideoProgress() {
+    if (_student == null || _selectedCourseId == null) return null;
+    return _firestoreService.streamVideoProgress(
+      uid: _student!.id,
+      courseId: _selectedCourseId!,
+    );
+  }
+
+  // Get chapter progress
+  Future<Map<String, int>> getChapterProgress(String chapterId) async {
+    if (_student == null || _selectedCourseId == null) {
+      return {'totalVideos': 0, 'completedVideos': 0};
+    }
+    return await _firestoreService.getChapterProgress(
+      uid: _student!.id,
+      courseId: _selectedCourseId!,
+      chapterId: chapterId,
+    );
+  }
 }

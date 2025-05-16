@@ -30,12 +30,14 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(
             content: Text(
               'Successfully signed out',
-              style: TextStyle(fontSize: 14), // Smaller text also helps reduce height
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
-            backgroundColor: Colors.green,
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
-            behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
-            duration: Duration(seconds: 3),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
           ),
         );
         authProvider.clearSignOutMessage();
@@ -72,28 +74,38 @@ class _LoginScreenState extends State<LoginScreen> {
       if (studentInitialized && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => DashboardScreen(),
+            builder: (_) => const DashboardScreen(),
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(studentProvider.error),
-            backgroundColor: Colors.red,
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
-            behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
-            duration: Duration(seconds: 3),
+            content: Text(
+              studentProvider.error,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onError,
+              ),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
     } else if (mounted && authProvider.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage!),
-          backgroundColor: Colors.red,
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
-          behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
-          duration: Duration(seconds: 3),
+          content: Text(
+            authProvider.errorMessage!,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -122,28 +134,38 @@ class _LoginScreenState extends State<LoginScreen> {
       if (studentInitialized && mounted) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (_) => DashboardScreen(),
+            builder: (_) => const DashboardScreen(),
           ),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(studentProvider.error),
-            backgroundColor: Colors.red,
-            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
-            behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
-            duration: Duration(seconds: 3),
+            content: Text(
+              studentProvider.error,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onError,
+              ),
+            ),
+            backgroundColor: Theme.of(context).colorScheme.error,
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
     } else if (mounted && authProvider.errorMessage != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(authProvider.errorMessage!),
-          backgroundColor: Colors.red,
-          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
-          behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
-          duration: Duration(seconds: 3),
+          content: Text(
+            authProvider.errorMessage!,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onError,
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -157,8 +179,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -172,36 +197,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.grey[100],
+                    color: theme.colorScheme.surface,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: theme.colorScheme.onSurface.withOpacity(isDarkMode ? 0.03 : 0.1),
                         blurRadius: 10,
                         offset: const Offset(4, 4),
                       ),
                       BoxShadow(
-                        color: Colors.white.withOpacity(0.7),
+                        color: theme.colorScheme.surfaceContainerHighest.withOpacity(isDarkMode ? 0.5 : 0.7),
                         blurRadius: 10,
                         offset: const Offset(-4, -4),
                       ),
                     ],
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.school,
                     size: 72,
-                    color: Colors.blueAccent,
+                    color: theme.colorScheme.primary,
                   ),
                 ),
                 const SizedBox(height: 24),
 
                 // App title with modern typography
-                const Text(
+                Text(
                   'Mr CA Virtuals',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontSize: 34,
                     fontWeight: FontWeight.w900,
-                    color: Colors.blueAccent,
+                    color: theme.colorScheme.primary,
                     letterSpacing: -0.8,
                   ),
                 ),
@@ -211,9 +236,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Student Login',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: theme.textTheme.bodyMedium?.copyWith(
                     fontSize: 16,
-                    color: Colors.grey[600],
                     fontWeight: FontWeight.w400,
                     letterSpacing: 0.5,
                   ),
@@ -242,24 +266,21 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: InputDecoration(
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                           labelText: 'Email',
-                          labelStyle: TextStyle(
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          prefixIcon: Icon(Icons.email, color: Colors.grey[600]),
+                          labelStyle: theme.textTheme.bodyMedium,
+                          prefixIcon: Icon(Icons.email, color: theme.iconTheme.color),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
                             borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
-                            borderSide: const BorderSide(
-                              color: Colors.blueAccent,
+                            borderSide: BorderSide(
+                              color: isDarkMode ? Colors.white54 : Colors.black38,
                               width: 2,
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: theme.colorScheme.surface,
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 18,
                             horizontal: 20,
@@ -285,17 +306,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: InputDecoration(
                           floatingLabelBehavior: FloatingLabelBehavior.auto,
                           labelText: 'Password',
-                          labelStyle: TextStyle(
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          prefixIcon: Icon(Icons.lock, color: Colors.grey[600]),
+                          labelStyle: theme.textTheme.bodyMedium,
+                          prefixIcon: Icon(Icons.lock, color: theme.iconTheme.color),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
                                   ? Icons.visibility
                                   : Icons.visibility_off,
-                              color: Colors.grey[600],
+                              color: theme.iconTheme.color,
                             ),
                             onPressed: () =>
                                 setState(() => _obscurePassword = !_obscurePassword),
@@ -306,13 +324,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
-                            borderSide: const BorderSide(
-                              color: Colors.blueAccent,
+                            borderSide: BorderSide(
+                              color: isDarkMode ? Colors.white54 : Colors.black38,
                               width: 2,
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: theme.colorScheme.surface,
                           contentPadding: const EdgeInsets.symmetric(
                             vertical: 18,
                             horizontal: 20,
@@ -329,14 +347,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          gradient: const LinearGradient(
-                            colors: [Colors.blueAccent, Colors.cyanAccent],
+                          gradient: LinearGradient(
+                            colors: [
+                              theme.colorScheme.primary,
+                              theme.colorScheme.secondary,
+                            ],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blueAccent.withOpacity(0.4),
+                              color: theme.colorScheme.primary.withOpacity(isDarkMode ? 0.3 : 0.4),
                               blurRadius: 12,
                               offset: const Offset(0, 6),
                             ),
@@ -344,25 +365,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: ElevatedButton(
                           onPressed: _isLoading ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                          style: theme.elevatedButtonTheme.style?.copyWith(
+                            backgroundColor: WidgetStateProperty.all(Colors.transparent),
+                            shadowColor: WidgetStateProperty.all(Colors.transparent),
+                            padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(vertical: 18),
                             ),
                           ),
                           child: _isLoading
-                              ? const SpinKitThreeBounce(
-                            color: Colors.white,
+                              ? SpinKitThreeBounce(
+                            color: theme.colorScheme.onPrimary,
                             size: 24,
                           )
-                              : const Text(
+                              : Text(
                             'Login',
-                            style: TextStyle(
+                            style: theme.textTheme.labelLarge?.copyWith(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                              color: theme.colorScheme.onPrimary,
                               letterSpacing: 0.8,
                             ),
                           ),
@@ -375,7 +395,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           Expanded(
                             child: Divider(
-                              color: Colors.grey[400],
+                              color: theme.colorScheme.outlineVariant,
                               thickness: 1.2,
                             ),
                           ),
@@ -383,8 +403,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Text(
                               'OR',
-                              style: TextStyle(
-                                color: Colors.grey[600],
+                              style: theme.textTheme.bodyMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 fontSize: 14,
                               ),
@@ -392,7 +411,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           Expanded(
                             child: Divider(
-                              color: Colors.grey[400],
+                              color: theme.colorScheme.outlineVariant,
                               thickness: 1.2,
                             ),
                           ),
@@ -404,10 +423,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
-                          color: Colors.white,
+                          color: theme.colorScheme.surface,
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: theme.colorScheme.onSurface.withOpacity(isDarkMode ? 0.03 : 0.05),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -415,12 +434,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         child: OutlinedButton(
                           onPressed: _isLoading ? null : _signInWithGoogle,
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            side: BorderSide.none,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
+                          style: theme.outlinedButtonTheme.style?.copyWith(
+                            padding: WidgetStateProperty.all(
+                              const EdgeInsets.symmetric(vertical: 16),
                             ),
                           ),
                           child: Row(
@@ -434,10 +450,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(width: 12),
                               Text(
                                 'Sign in with Google',
-                                style: TextStyle(
+                                style: theme.textTheme.labelLarge?.copyWith(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey[800],
+                                  color: theme.colorScheme.onSurface,
                                 ),
                               ),
                             ],

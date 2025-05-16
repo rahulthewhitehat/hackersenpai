@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/student_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/course_tile.dart';
 import 'course_screen.dart';
 import 'login_screen.dart';
@@ -13,63 +14,54 @@ class DashboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
     final studentProvider = Provider.of<StudentProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final student = studentProvider.student;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    // If student data is null, redirect to login
     if (student == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       });
-      return const Scaffold(
+      return Scaffold(
         body: Center(
           child: CircularProgressIndicator(
             strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+            valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
           ),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'Dashboard',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
-            fontSize: 22,
-            color: Colors.white,
-            letterSpacing: 0.5,
-          ),
-        ),
         centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blueAccent, Colors.cyanAccent],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(24),
-              bottomRight: Radius.circular(24),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.blueAccent.withOpacity(0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+        title: Text(
+          'Dashboard',
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white, size: 26),
+            icon: Icon(
+              themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              themeProvider.toggleTheme();
+            },
+            tooltip: 'Toggle Theme',
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.logout,
+              color: Colors.white,
+              size: 26,
+            ),
             onPressed: () async {
               await authProvider.signOut();
               studentProvider.clearData();
@@ -81,29 +73,36 @@ class DashboardScreen extends StatelessWidget {
             },
           ),
         ],
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colorScheme.primary, colorScheme.secondary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(24),
+              bottomRight: Radius.circular(24),
+            ),
+          ),
+        ),
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Student info card with neumorphic effect
             Container(
               padding: const EdgeInsets.all(24),
               margin: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: colorScheme.onSurface.withOpacity(themeProvider.isDarkMode ? 0.03 : 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withOpacity(0.7),
-                    blurRadius: 10,
-                    offset: const Offset(-4, -4),
                   ),
                 ],
               ),
@@ -118,21 +117,21 @@ class DashboardScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
-                            colors: [Colors.blueAccent, Colors.cyanAccent],
+                            colors: [colorScheme.primary, colorScheme.secondary],
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.blueAccent.withOpacity(0.3),
+                              color: colorScheme.primary.withOpacity(themeProvider.isDarkMode ? 0.2 : 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
                           ],
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.person,
-                          color: Colors.white,
+                          color: colorScheme.onPrimary,
                           size: 32,
                         ),
                       ),
@@ -143,21 +142,14 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Text(
                               "Welcome, ${student.name}",
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.blueAccent,
-                                letterSpacing: -0.5,
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: colorScheme.primary,
                               ),
                             ),
                             const SizedBox(height: 6),
                             Text(
                               'ID: ${student.studentId}',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: theme.textTheme.bodyMedium,
                             ),
                           ],
                         ),
@@ -167,8 +159,6 @@ class DashboardScreen extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Course section title
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
               child: Row(
@@ -176,34 +166,25 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   Text(
                     'My Courses',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.grey[800],
-                      letterSpacing: -0.5,
-                    ),
+                    style: theme.textTheme.titleLarge,
                   ),
                   if (studentProvider.courses.isNotEmpty)
                     Text(
                       '${studentProvider.courses.length} Active',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: theme.textTheme.bodyMedium,
                     ),
                 ],
               ),
             ),
-
-            // Course list
             studentProvider.isLoading
-                ? const Padding(
-              padding: EdgeInsets.only(top: 100),
+                ? Padding(
+              padding: const EdgeInsets.only(top: 100),
               child: Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    colorScheme.primary,
+                  ),
                 ),
               ),
             )
@@ -217,25 +198,17 @@ class DashboardScreen extends StatelessWidget {
                     Icon(
                       Icons.auto_stories,
                       size: 80,
-                      color: Colors.grey[300],
+                      color: colorScheme.onSurface.withOpacity(0.5),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'No active courses available',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
-                      ),
+                      style: theme.textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Your courses may have expired or not yet assigned by admin.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[500],
-                        fontWeight: FontWeight.w400,
-                      ),
+                      style: theme.textTheme.bodyMedium,
                     ),
                   ],
                 ),
@@ -253,8 +226,7 @@ class DashboardScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                CourseScreen(courseId: course.id),
+                            builder: (_) => CourseScreen(courseId: course.id),
                           ),
                         );
                       },

@@ -1,4 +1,3 @@
-/// Video Model
 library;
 
 class VideoModel {
@@ -9,26 +8,33 @@ class VideoModel {
   final String courseId;
   final String chapterId;
   final int order;
+  final bool completed; // Field to track completion status
 
   VideoModel({
     required this.id,
     required this.name,
-    required this.description,
+    this.description = '',
     required this.link,
     required this.courseId,
     required this.chapterId,
     required this.order,
+    this.completed = false, required String videoId,
   });
 
-  factory VideoModel.fromMap(String id, Map<String, dynamic> data) {
+  factory VideoModel.fromMap(String id, Map<String, dynamic> map) {
+    // Ensure link is a string, handle potential type issues
+    final rawLink = map['link'];
+    final String link = rawLink is String ? rawLink : rawLink?.toString() ?? '';
+
     return VideoModel(
       id: id,
-      name: data['name'] ?? '',
-      description: data['description'] ?? '',
-      link: data['link'],
-      courseId: data['course_id'] ?? '',
-      chapterId: data['chapter_id'] ?? '',
-      order: data['order'] ?? 0,
+      name: map['name'] ?? '',
+      description: map['description'] ?? '',
+      link: link,
+      courseId: map['course_id'] ?? '',
+      chapterId: map['chapter_id'] ?? '',
+      order: map['order'] is int ? map['order'] : int.tryParse(map['order']?.toString() ?? '0') ?? 0,
+      completed: map['completed'] ?? false, videoId: '',
     );
   }
 
@@ -39,6 +45,8 @@ class VideoModel {
       'link': link,
       'course_id': courseId,
       'chapter_id': chapterId,
+      'order': order,
+      'completed': completed,
     };
   }
 
