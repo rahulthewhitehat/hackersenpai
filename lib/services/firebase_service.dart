@@ -165,4 +165,22 @@ class FirestoreService {
       rethrow;
     }
   }
+
+  Future<void> unmarkVideoAsCompleted({
+    required String uid,
+    required String videoId,
+  }) async {
+    try {
+      // Delete the document to remove the completion status
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('video_progress')
+          .doc(videoId)
+          .delete();
+    } catch (e) {
+      //print('Error unmarking video as completed: $e');
+      rethrow;
+    }
+  }
 }

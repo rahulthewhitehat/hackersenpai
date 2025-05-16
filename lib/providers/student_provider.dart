@@ -166,6 +166,33 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
+  Future<void> unmarkVideoAsCompleted(VideoModel video) async {
+    if (_student == null || _selectedCourseId == null) return;
+    try {
+      await _firestoreService.unmarkVideoAsCompleted(
+        uid: _student!.id,
+        videoId: video.id,
+      );
+      // Update the selected video if it's the one being unmarked
+      if (_selectedVideo?.id == video.id) {
+        _selectedVideo = VideoModel(
+          id: video.id,
+          name: video.name,
+          description: video.description,
+          videoId: video.videoId,
+          chapterId: video.chapterId,
+          completed: false,
+          link: video.link,
+          courseId: video.courseId,
+          order: video.order,
+        );
+      }
+      notifyListeners();
+    } catch (e) {
+      // Handle error appropriately
+    }
+  }
+
   // Stream video progress for the current course
   Stream<List<Map<String, dynamic>>>? getVideoProgress() {
     if (_student == null || _selectedCourseId == null) return null;

@@ -140,10 +140,13 @@ class VideoListItem extends StatelessWidget {
                         color: video.completed ? colorScheme.primary : colorScheme.onSurfaceVariant,
                         size: 24,
                       ),
-                      onPressed: video.completed
-                          ? null
-                          : () {
-                        studentProvider.markVideoAsCompleted(video);
+                      onPressed: () {
+                        // Toggle completion status
+                        if (video.completed) {
+                          studentProvider.unmarkVideoAsCompleted(video);
+                        } else {
+                          studentProvider.markVideoAsCompleted(video);
+                        }
                       },
                     ),
                   ],
