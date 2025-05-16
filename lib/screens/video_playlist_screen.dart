@@ -73,11 +73,10 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
       final orientation = MediaQuery
           .of(context)
           .orientation;
-      final isFullScreen = orientation == Orientation.landscape ||
-          _controller.value.isFullScreen;
-      if (isFullScreen != _isFullScreen) {
+      final isActuallyFullScreen = _controller.value.isFullScreen || orientation == Orientation.landscape;
+      if (isActuallyFullScreen != _isFullScreen) {
         setState(() {
-          _isFullScreen = isFullScreen;
+          _isFullScreen = isActuallyFullScreen;
         });
         _updateWatermarkOverlay();
       }
@@ -119,7 +118,6 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
       final studentProvider = Provider.of<StudentProvider>(
           context, listen: false);
 
-      // Find current chapter
       final chaptersStream = studentProvider.getChapters();
       if (chaptersStream != null) {
         final chapters = await chaptersStream.first;
@@ -129,12 +127,19 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
         );
       }
 
-      // Get videos
       final videosStream = studentProvider.getVideos();
       if (videosStream != null) {
         final videos = await videosStream.first;
         if (videos.isNotEmpty) {
-          _currentVideo = studentProvider.selectedVideo ?? videos.first;
+          VideoModel? chapterVideo = videos.firstWhere((v) => v.chapterId == widget.chapterId, orElse: () => videos.first);
+          _currentVideo = studentProvider.selectedVideo ?? chapterVideo;
+
+
+          if (_currentVideo == null || (_currentVideo!.chapterId != widget.chapterId && videos.any((v) => v.chapterId == widget.chapterId))) {
+            _currentVideo = videos.firstWhere((v) => v.chapterId == widget.chapterId, orElse: () => videos.first);
+          }
+          studentProvider.selectVideo(_currentVideo!);
+
 
           _controller = YoutubePlayerController(
             initialVideoId: _currentVideo!.videoId,
@@ -151,9 +156,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
             ),
           );
 
-          // Add listener to detect fullscreen changes
           _controller.addListener(_onControllerUpdate);
-
           _isInitialized = true;
         } else {
           setState(() {
@@ -161,9 +164,13 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
             _errorMessage = 'No videos available in this chapter';
           });
         }
+      } else {
+        setState(() {
+          _isError = true;
+          _errorMessage = 'No videos stream available';
+        });
       }
     } catch (e) {
-      //print('Error initializing screen: $e');
       setState(() {
         _isError = true;
         _errorMessage = 'Failed to load content: ${e.toString()}';
@@ -178,13 +185,16 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   }
 
   void _onControllerUpdate() {
-    // Update fullscreen state when YouTube player state changes
+    if (!_isInitialized) return;
     final isFullScreenFromController = _controller.value.isFullScreen;
     if (isFullScreenFromController != _isFullScreen) {
       setState(() {
         _isFullScreen = isFullScreenFromController;
       });
       _updateWatermarkOverlay();
+    }
+    if (mounted) {
+      setState(() {});
     }
   }
 
@@ -196,42 +206,36 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
   }
 
   Future<void> _changeVideo(VideoModel video) async {
-    if (_currentVideo?.id == video.id) return;
+    if (_currentVideo?.id == video.id && _controller.metadata.videoId == video.videoId) return;
+
 
     final studentProvider = Provider.of<StudentProvider>(
         context, listen: false);
     studentProvider.selectVideo(video);
 
     setState(() {
-      _isLoading = true;
       _currentVideo = video;
     });
 
     try {
       _controller.load(video.videoId);
-      _controller.play();
-      _updateWatermarkOverlay(); // Update watermark when video changes
+      _updateWatermarkOverlay();
     } catch (e) {
-      //print('Error changing video: $e');
       setState(() {
         _isError = true;
         _errorMessage = 'Failed to load video: ${e.toString()}';
       });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
   }
 
   void _retryPlayback() {
-    if (_currentVideo != null) {
+    if (_currentVideo != null || _isError) {
       setState(() {
         _isLoading = true;
+        _isError = false;
+        _errorMessage = '';
       });
-      _changeVideo(_currentVideo!);
+      _initializeScreen();
     }
   }
 
@@ -239,9 +243,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     return Stack(
       key: _videoPlayerKey,
       children: [
-        // The YouTube player
         player,
-        // Watermark overlay constrained to player area (only in portrait)
         if (!_isFullScreen)
           Positioned.fill(
             child: FloatingWatermark(
@@ -254,33 +256,68 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     );
   }
 
+  // ONLY THIS METHOD IS MODIFIED SIGNIFICANTLY
   YoutubePlayer _buildVideoPlayer() {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    const iconColor = Colors.white;
+
     return YoutubePlayer(
       controller: _controller,
       showVideoProgressIndicator: true,
-      progressIndicatorColor: Theme
-          .of(context)
-          .colorScheme
-          .primary,
-      progressColors: ProgressBarColors(
-        playedColor: Theme
-            .of(context)
-            .colorScheme
-            .primary,
-        handleColor: Theme
-            .of(context)
-            .colorScheme
-            .primary,
-        bufferedColor: Theme
-            .of(context)
-            .colorScheme
-            .primaryContainer,
-        backgroundColor: Theme
-            .of(context)
-            .colorScheme
-            .surfaceContainerHighest,
-      ),
-      onReady: () => setState(() {}),
+      progressIndicatorColor: colorScheme.primary,
+      bottomActions: [
+        CurrentPosition(controller: _controller),
+        IconButton(
+          icon: const Icon(Icons.replay_10, color: iconColor, size: 28.0),
+          onPressed: !_isInitialized
+              ? null
+              : () {
+            final currentPosition = _controller.value.position;
+            var newPosition = currentPosition - const Duration(seconds: 10);
+            if (newPosition < Duration.zero) {
+              newPosition = Duration.zero;
+            }
+            _controller.seekTo(newPosition);
+          },
+        ),
+        Expanded(
+          child: ProgressBar(
+            controller: _controller,
+            colors: ProgressBarColors(
+              playedColor: colorScheme.primary,
+              handleColor: colorScheme.primary,
+              bufferedColor: colorScheme.primaryContainer.withOpacity(0.7),
+              backgroundColor: colorScheme.surfaceContainerHighest.withOpacity(0.4),
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.forward_10, color: iconColor, size: 28.0),
+          onPressed: !_isInitialized
+              ? null
+              : () {
+            final currentPosition = _controller.value.position;
+            final videoDuration = _controller.metadata.duration;
+            var newPosition = currentPosition + const Duration(seconds: 10);
+            if (videoDuration > Duration.zero && newPosition > videoDuration) {
+              newPosition = videoDuration;
+            }
+            _controller.seekTo(newPosition);
+          },
+        ),
+        RemainingDuration(controller: _controller),
+        PlaybackSpeedButton( // ADDED PLAYBACK SPEED BUTTON
+          controller: _controller,
+          //iconColor: iconColor, // Optional: ensure icon color consistency
+        ),
+        FullScreenButton(controller: _controller),
+      ],
+      onReady: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
     );
   }
 
@@ -294,7 +331,6 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Prepare watermark text
     final watermarkText = "${student?.email ?? ''}\n${student?.studentId ??
         ''}";
 
@@ -323,12 +359,12 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
       );
     }
 
-    if (_isError) {
+    if (_isError || !_isInitialized || _currentVideo == null) {
       return Scaffold(
         backgroundColor: Colors.grey[100],
         appBar: AppBar(
           title: Text(
-            _currentChapter?.name ?? 'Error',
+            _currentChapter?.name ?? (_isError ? 'Error' : 'Video Player'),
             style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -365,7 +401,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  _errorMessage,
+                  _errorMessage.isNotEmpty ? _errorMessage : "Could not load video content.",
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.error,
@@ -402,118 +438,109 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
         Widget playerWithWatermark = _buildVideoPlayerWithWatermark(
             player, watermarkText);
 
+        if (_isFullScreen) {
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: Center(
+              child: playerWithWatermark,
+            ),
+          );
+        }
+
         if (isLandscape) {
           return Scaffold(
             backgroundColor: Colors.black,
-            body: Stack(
+            body: Row(
               children: [
-                // Player with watermark
-                Positioned.fill(child: playerWithWatermark),
-
-                // Playlist toggle button
-                if (_isFullScreen)
-                  Positioned(
-                    top: 20,
-                    right: 20,
-                    child: FloatingActionButton(
-                      mini: true,
-                      backgroundColor: Colors.black.withOpacity(0.8),
-                      elevation: 4,
-                      onPressed: _togglePlaylistVisibility,
-                      child: Icon(
-                        _showPlaylistInLandscape ? Icons.close : Icons
-                            .playlist_play,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-
-                // Sliding playlist
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                  right: _playlistWidth - 300,
-                  top: 0,
-                  bottom: 0,
-                  width: 300,
-                  child: Material(
-                    elevation: 12,
-                    color: Colors.transparent,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          bottomLeft: Radius.circular(20),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 12,
-                            offset: const Offset(-4, 0),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Chapter name header
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  colorScheme.primary,
-                                  colorScheme.primaryContainer
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    _currentChapter?.name ?? 'Videos',
-                                    style: theme.textTheme.titleMedium
-                                        ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 18,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(
-                                      Icons.close, color: Colors.white,
-                                      size: 24),
-                                  onPressed: _togglePlaylistVisibility,
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // Videos list
-                          Expanded(
-                            child: _buildVideoList(studentProvider),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                Expanded(
+                  flex: _showPlaylistInLandscape ? 2 : 3,
+                  child: playerWithWatermark,
                 ),
+                if (_showPlaylistInLandscape)
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: _playlistWidth,
+                    curve: Curves.easeInOut,
+                    child: Material(
+                      elevation: 12,
+                      color: Colors.transparent,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: theme.canvasColor,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(20),
+                            bottomLeft: Radius.circular(20),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.15),
+                              blurRadius: 12,
+                              offset: const Offset(-4, 0),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [colorScheme.primary, colorScheme.secondary],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: const BorderRadius.only(topLeft: Radius.circular(20)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _currentChapter?.name ?? 'Videos',
+                                      style: theme.textTheme.titleMedium?.copyWith(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                                    onPressed: _togglePlaylistVisibility,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(child: _buildVideoList(studentProvider)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                if (!_isFullScreen)
+                  Positioned(
+                    top: 10,
+                    right: _showPlaylistInLandscape ? _playlistWidth + 5 : 5,
+                    child: Material(
+                      color: Colors.transparent,
+                      child: FloatingActionButton(
+                        mini: true,
+                        elevation: 2,
+                        backgroundColor: Colors.black.withOpacity(0.6),
+                        onPressed: _togglePlaylistVisibility,
+                        child: Icon(
+                          _showPlaylistInLandscape ? Icons.arrow_forward_ios : Icons.playlist_play,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
         }
 
-        // Portrait mode
         return Scaffold(
           backgroundColor: Colors.grey[100],
           appBar: AppBar(
@@ -545,27 +572,24 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
           ),
           body: Column(
             children: [
-              // Video Player with watermark
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Container(
-                  decoration: BoxDecoration(
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: playerWithWatermark,
-                  ),
+              Container(
+                margin: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: playerWithWatermark,
                 ),
               ),
 
-              // Video info
               if (_currentVideo != null)
                 Padding(
                   padding: const EdgeInsets.all(16),
@@ -593,6 +617,8 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                               fontWeight: FontWeight.w400,
                             ),
                             textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ],
@@ -600,31 +626,27 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                   ),
                 ),
 
-              // Playlist header
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.cardColor,
                   border: Border(
                     bottom: BorderSide(
-                      color: colorScheme.surfaceContainerHighest,
-                      width: 1.5,
+                      color: colorScheme.outlineVariant,
+                      width: 1,
+                    ),
+                    top: BorderSide(
+                      color: colorScheme.outlineVariant,
+                      width: 1,
                     ),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
                 ),
                 child: Row(
                   children: [
                     Icon(Icons.playlist_play, color: colorScheme.primary,
                         size: 26),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Text(
                       'Playlist',
                       style: theme.textTheme.titleMedium?.copyWith(
@@ -634,18 +656,20 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      _currentChapter?.name ?? '',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface.withOpacity(0.6),
-                        fontWeight: FontWeight.w500,
+                    Flexible(
+                      child: Text(
+                        _currentChapter?.name ?? '',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              // Video list
               Expanded(
                 child: _buildVideoList(studentProvider),
               ),
@@ -663,6 +687,14 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     return StreamBuilder<List<VideoModel>>(
       stream: studentProvider.getVideos(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+          return Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+            ),
+          );
+        }
         if (snapshot.hasError) {
           return Center(
             child: Column(
@@ -681,23 +713,17 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(snapshot.error.toString(), style: theme.textTheme.bodySmall, textAlign: TextAlign.center,),
+                ),
               ],
             ),
           );
         }
 
-        if (!snapshot.hasData) {
-          return Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 3,
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-            ),
-          );
-        }
-
-        final videos = snapshot.data!;
-
-        if (videos.isEmpty) {
+        final allVideos = snapshot.data;
+        if (allVideos == null || allVideos.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -719,11 +745,36 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
             ),
           );
         }
+        final videos = allVideos.where((video) => video.chapterId == widget.chapterId).toList();
+
+        if (videos.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.videocam_off,
+                  size: 56,
+                  color: colorScheme.onSurface.withOpacity(0.5),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No videos in this chapter',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.7),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
 
         return ListView.separated(
           itemCount: videos.length,
           padding: const EdgeInsets.only(bottom: 32, top: 12),
-          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          separatorBuilder: (context, index) => Divider(indent: 16, endIndent: 16, height:1, color: colorScheme.outlineVariant.withOpacity(0.5)),
           itemBuilder: (context, index) {
             final video = videos[index];
             final isSelected = _currentVideo != null &&

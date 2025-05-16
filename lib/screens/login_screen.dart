@@ -80,6 +80,9 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(
             content: Text(studentProvider.error),
             backgroundColor: Colors.red,
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
+            behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
+            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -88,6 +91,9 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(authProvider.errorMessage!),
           backgroundColor: Colors.red,
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
+          behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
+          duration: Duration(seconds: 3),
         ),
       );
     }
@@ -124,6 +130,9 @@ class _LoginScreenState extends State<LoginScreen> {
           SnackBar(
             content: Text(studentProvider.error),
             backgroundColor: Colors.red,
+            padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
+            behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
+            duration: Duration(seconds: 3),
           ),
         );
       }
@@ -132,6 +141,9 @@ class _LoginScreenState extends State<LoginScreen> {
         SnackBar(
           content: Text(authProvider.errorMessage!),
           backgroundColor: Colors.red,
+          padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // Less vertical padding
+          behavior: SnackBarBehavior.floating, // Optional: allows margin/shape customization
+          duration: Duration(seconds: 3),
         ),
       );
     }

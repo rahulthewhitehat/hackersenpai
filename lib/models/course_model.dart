@@ -1,7 +1,10 @@
+/// Course Model
+library;
+
 class CourseModel {
   final String id;
   final String name;
-  final String? expiryDate; // Added expiry date field
+  final String? expiryDate;
 
   CourseModel({
     required this.id,
@@ -13,11 +16,11 @@ class CourseModel {
     return CourseModel(
       id: id,
       name: data['name'] ?? id,
-      expiryDate: null, // Will be set from StudentProvider
+      expiryDate: null,
     );
   }
 
-  // Create a copy of the course model with expiry date
+  // Creating a copy of the course model with expiry date
   CourseModel copyWithExpiryDate(String? expiryDate) {
     return CourseModel(
       id: id,

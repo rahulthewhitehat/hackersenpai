@@ -1,3 +1,6 @@
+/// Student Model
+library;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class StudentModel {
@@ -6,7 +9,7 @@ class StudentModel {
   final String name;
   final String email;
   final DateTime lastLogin;
-  final Map<String, String> subjects; // Changed from List<String> to Map<String, String>
+  final Map<String, String> subjects;
 
   StudentModel({
     required this.id,

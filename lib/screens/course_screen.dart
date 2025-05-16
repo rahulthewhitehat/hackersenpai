@@ -121,7 +121,7 @@ class CourseScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Browse chapters below',
+                        'Browse chapters',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey[600],

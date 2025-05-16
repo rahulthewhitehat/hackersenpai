@@ -1,16 +1,19 @@
+/// Chapter Model
+library;
+
 class ChapterModel {
   final String id;
   final String name;
   final String description;
   final String courseId;
-  final int order; // Add this field
+  final int order;
 
   ChapterModel({
     required this.id,
     required this.name,
     required this.description,
     required this.courseId,
-    required this.order, // Add to constructor
+    required this.order,
   });
 
   factory ChapterModel.fromMap(String id, Map<String, dynamic> data) {
@@ -19,7 +22,7 @@ class ChapterModel {
       name: data['name'] ?? '',
       description: data['description'] ?? '',
       courseId: data['course_id'] ?? '',
-      order: data['order'] ?? 0, // Add to fromMap
+      order: data['order'] ?? 0,
     );
   }
 
@@ -28,7 +31,7 @@ class ChapterModel {
       'name': name,
       'description': description,
       'course_id': courseId,
-      'order': order, // Add to toMap
+      'order': order,
     };
   }
 }

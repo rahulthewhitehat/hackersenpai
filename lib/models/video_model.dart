@@ -1,4 +1,5 @@
-
+/// Video Model
+library;
 
 class VideoModel {
   final String id;
@@ -27,7 +28,7 @@ class VideoModel {
       link: data['link'],
       courseId: data['course_id'] ?? '',
       chapterId: data['chapter_id'] ?? '',
-      order: data['order'] ?? 0, // Add to fromMap
+      order: data['order'] ?? 0,
     );
   }
 
@@ -42,7 +43,6 @@ class VideoModel {
   }
 
   // Method to extract video ID from YouTube link
-  // In VideoModel class, replace the videoId getter with this:
   String get videoId {
     try {
       final uri = Uri.parse(link);
@@ -60,15 +60,6 @@ class VideoModel {
     } catch (e) {
       return '';
     }
-  }
-
-  // URL for web browser viewing
-  String get browserUrl {
-    final id = videoId;
-    if (id.isNotEmpty) {
-      return 'https://www.youtube.com/watch?v=$id';
-    }
-    return link;
   }
 
   // URL for embedded player

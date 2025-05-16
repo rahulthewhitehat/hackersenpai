@@ -10,7 +10,7 @@ class StudentProvider with ChangeNotifier {
 
   StudentModel? _student;
   List<CourseModel> _courses = [];
-  List<CourseModel> _activeCourses = []; // Added for active courses only
+  List<CourseModel> _activeCourses = [];
   String? _selectedCourseId;
   String? _selectedChapterId;
   VideoModel? _selectedVideo;
@@ -20,7 +20,7 @@ class StudentProvider with ChangeNotifier {
 
   // Getters
   StudentModel? get student => _student;
-  List<CourseModel> get courses => _activeCourses; // Changed to return only active courses
+  List<CourseModel> get courses => _activeCourses;
   String? get selectedCourseId => _selectedCourseId;
   String? get selectedChapterId => _selectedChapterId;
   VideoModel? get selectedVideo => _selectedVideo;

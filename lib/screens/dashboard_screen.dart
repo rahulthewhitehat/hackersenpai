@@ -230,7 +230,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Your courses may have expired or not yet assigned',
+                      'Your courses may have expired or not yet assigned by admin.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.grey[500],
