@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:mrcavirtuals/screens/dashboard_screen.dart';
-import 'package:mrcavirtuals/screens/login_screen.dart';
+import '/screens/dashboard_screen.dart';
+import '/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/student_provider.dart';
@@ -251,7 +251,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     ],
                                   ),
                                   child: Icon(
-                                    Icons.school,
+                                    Icons.bug_report_outlined,
                                     size: 80,
                                     color: Theme.of(context).colorScheme.onPrimary,
                                   ),

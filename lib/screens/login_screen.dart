@@ -212,7 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   child: Icon(
-                    Icons.school,
+                    Icons.bug_report_outlined ,
                     size: 72,
                     color: theme.colorScheme.primary,
                   ),
@@ -221,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // App title with modern typography
                 Text(
-                  'Mr CA Virtuals',
+                  'Hacker Senpai',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontSize: 34,

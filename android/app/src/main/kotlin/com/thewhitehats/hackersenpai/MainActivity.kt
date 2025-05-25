@@ -1,4 +1,4 @@
-package com.kirubakaran.mrcavirtuals
+package com.thewhitehats.hackersenpai
 
 import io.flutter.embedding.android.FlutterActivity
 
