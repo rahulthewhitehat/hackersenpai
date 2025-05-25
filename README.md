@@ -21,7 +21,7 @@
         
     *   Lists videos inside each chapter
         
-*   *   Plays **Google Drive** videos using a secure embedded player
+*   *   Plays **YouTube** videos using a secure embedded player
         
     *   Displays **dynamic watermark** overlay
         
@@ -90,7 +90,6 @@
     
 *   Screen content is protected
     
-*   YouTube videos are not recommended for watermark control (use GDrive or Firebase Storage)
     
 
 **📦 Future Enhancements (Optional)**
