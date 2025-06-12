@@ -3,6 +3,7 @@ import '../models/chapter_model.dart';
 import '../models/student_model.dart';
 import '../models/course_model.dart';
 import '../models/video_model.dart';
+import '../models/note_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -16,7 +17,6 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      //print('Error getting student data: $e');
       rethrow;
     }
   }
@@ -30,7 +30,6 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      //print('Error getting course data: $e');
       rethrow;
     }
   }
@@ -39,18 +38,15 @@ class FirestoreService {
   Future<List<CourseModel>> getStudentCourses(Map<String, String> subjectsMap) async {
     List<CourseModel> courses = [];
     try {
-      // For each subject in the map, get the course data
       for (String courseId in subjectsMap.keys) {
         final course = await getCourseData(courseId);
         if (course != null) {
-          // Add the expiry date to the course
           final courseWithExpiry = course.copyWithExpiryDate(subjectsMap[courseId]);
           courses.add(courseWithExpiry);
         }
       }
       return courses;
     } catch (e) {
-      //print('Error getting student courses: $e');
       rethrow;
     }
   }
@@ -87,6 +83,23 @@ class FirestoreService {
     });
   }
 
+  // Get notes for a chapter
+  Stream<List<NoteModel>> getNotes(String courseId, String chapterId) {
+    return _firestore
+        .collection('courses')
+        .doc(courseId)
+        .collection('chapters')
+        .doc(chapterId)
+        .collection('notes')
+        .orderBy('order')
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return NoteModel.fromMap(doc.id, doc.data());
+      }).toList();
+    });
+  }
+
   // Mark a video as completed for a user
   Future<void> markVideoAsCompleted({
     required String uid,
@@ -108,7 +121,65 @@ class FirestoreService {
         'completedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
     } catch (e) {
-      //print('Error marking video as completed: $e');
+      rethrow;
+    }
+  }
+
+  // Mark a note as completed for a user
+  Future<void> markNoteAsCompleted({
+    required String uid,
+    required String noteId,
+    required String courseId,
+    required String chapterId,
+  }) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('note_progress')
+          .doc(noteId)
+          .set({
+        'noteId': noteId,
+        'courseId': courseId,
+        'chapterId': chapterId,
+        'completed': true,
+        'completedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Unmark a video as completed
+  Future<void> unmarkVideoAsCompleted({
+    required String uid,
+    required String videoId,
+  }) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('video_progress')
+          .doc(videoId)
+          .delete();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Unmark a note as completed
+  Future<void> unmarkNoteAsCompleted({
+    required String uid,
+    required String noteId,
+  }) async {
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('note_progress')
+          .doc(noteId)
+          .delete();
+    } catch (e) {
       rethrow;
     }
   }
@@ -129,7 +200,23 @@ class FirestoreService {
     });
   }
 
-  // Get total and completed video counts for a chapter
+  // Stream note progress for a user in a specific course
+  Stream<List<Map<String, dynamic>>> streamNoteProgress({
+    required String uid,
+    required String courseId,
+  }) {
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('note_progress')
+        .where('courseId', isEqualTo: courseId)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => doc.data()).toList();
+    });
+  }
+
+  // Get total and completed video and note counts for a chapter
   Future<Map<String, int>> getChapterProgress({
     required String uid,
     required String courseId,
@@ -147,39 +234,44 @@ class FirestoreService {
       final totalVideos = videoSnapshot.docs.length;
 
       // Get completed videos in the chapter
-      final progressSnapshot = await _firestore
+      final videoProgressSnapshot = await _firestore
           .collection('users')
           .doc(uid)
           .collection('video_progress')
           .where('chapterId', isEqualTo: chapterId)
           .where('completed', isEqualTo: true)
           .get();
-      final completedVideos = progressSnapshot.docs.length;
+      final completedVideos = videoProgressSnapshot.docs.length;
+
+      // Get total notes in the chapter
+      final noteSnapshot = await _firestore
+          .collection('courses')
+          .doc(courseId)
+          .collection('chapters')
+          .doc(chapterId)
+          .collection('notes')
+          .get();
+      final totalNotes = noteSnapshot.docs.length;
+
+      // Get completed notes in the chapter
+      final noteProgressSnapshot = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('note_progress')
+          .where('chapterId', isEqualTo: chapterId)
+          .where('completed', isEqualTo: true)
+          .get();
+      final completedNotes = noteProgressSnapshot.docs.length;
 
       return {
         'totalVideos': totalVideos,
         'completedVideos': completedVideos,
+        'totalNotes': totalNotes,
+        'completedNotes': completedNotes,
+        'totalItems': totalVideos + totalNotes,
+        'completedItems': completedVideos + completedNotes,
       };
     } catch (e) {
-      //print('Error getting chapter progress: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> unmarkVideoAsCompleted({
-    required String uid,
-    required String videoId,
-  }) async {
-    try {
-      // Delete the document to remove the completion status
-      await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection('video_progress')
-          .doc(videoId)
-          .delete();
-    } catch (e) {
-      //print('Error unmarking video as completed: $e');
       rethrow;
     }
   }

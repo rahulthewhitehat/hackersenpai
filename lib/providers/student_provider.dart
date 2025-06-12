@@ -3,6 +3,7 @@ import '../models/student_model.dart';
 import '../models/course_model.dart';
 import '../models/chapter_model.dart';
 import '../models/video_model.dart';
+import '../models/note_model.dart';
 import '../services/firebase_service.dart';
 
 class StudentProvider with ChangeNotifier {
@@ -14,6 +15,7 @@ class StudentProvider with ChangeNotifier {
   String? _selectedCourseId;
   String? _selectedChapterId;
   VideoModel? _selectedVideo;
+  NoteModel? _selectedNote;
 
   bool _isLoading = false;
   String _error = '';
@@ -24,6 +26,7 @@ class StudentProvider with ChangeNotifier {
   String? get selectedCourseId => _selectedCourseId;
   String? get selectedChapterId => _selectedChapterId;
   VideoModel? get selectedVideo => _selectedVideo;
+  NoteModel? get selectedNote => _selectedNote;
   bool get isLoading => _isLoading;
   String get error => _error;
 
@@ -32,7 +35,6 @@ class StudentProvider with ChangeNotifier {
     try {
       _setLoading(true);
 
-      // Get student data
       final studentData = await _firestoreService.getStudentData(uid);
       if (studentData == null) {
         _setError('Student data not found');
@@ -41,10 +43,8 @@ class StudentProvider with ChangeNotifier {
 
       _student = studentData;
 
-      // Get courses with expiry dates
       _courses = await _firestoreService.getStudentCourses(_student!.subjects);
 
-      // Filter out expired courses
       _filterActiveCourses();
 
       _setLoading(false);
@@ -55,22 +55,17 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  // Filter active courses based on expiry date
   void _filterActiveCourses() {
     final now = DateTime.now();
     _activeCourses = _courses.where((course) {
-      // If no expiry date, consider it as active
       if (course.expiryDate == null || course.expiryDate!.isEmpty) {
         return true;
       }
 
       try {
-        // Parse the expiry date
         final expiry = DateTime.parse(course.expiryDate!);
-        // Course is active if expiry date is in the future
         return expiry.isAfter(now);
       } catch (e) {
-        // If parsing fails, consider as active
         return true;
       }
     }).toList();
@@ -78,48 +73,56 @@ class StudentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Select a course
   void selectCourse(String courseId) {
     _selectedCourseId = courseId;
     _selectedChapterId = null;
     _selectedVideo = null;
+    _selectedNote = null;
     notifyListeners();
   }
 
-  // Select a chapter
   void selectChapter(String chapterId) {
     _selectedChapterId = chapterId;
+    _selectedVideo = null;
+    _selectedNote = null;
+    notifyListeners();
+  }
+
+  void selectVideo(VideoModel video) {
+    _selectedVideo = video;
+    _selectedNote = null;
+    notifyListeners();
+  }
+
+  void selectNote(NoteModel note) {
+    _selectedNote = note;
     _selectedVideo = null;
     notifyListeners();
   }
 
-  // Select a video
-  void selectVideo(VideoModel video) {
-    _selectedVideo = video;
-    notifyListeners();
-  }
-
-  // Get chapters stream
   Stream<List<ChapterModel>>? getChapters() {
     if (_selectedCourseId == null) return null;
     return _firestoreService.getChapters(_selectedCourseId!);
   }
 
-  // Get videos stream
   Stream<List<VideoModel>>? getVideos() {
     if (_selectedCourseId == null || _selectedChapterId == null) return null;
     return _firestoreService.getVideos(_selectedCourseId!, _selectedChapterId!);
   }
 
-  // Reset selection
+  Stream<List<NoteModel>>? getNotes() {
+    if (_selectedCourseId == null || _selectedChapterId == null) return null;
+    return _firestoreService.getNotes(_selectedCourseId!, _selectedChapterId!);
+  }
+
   void resetSelection() {
     _selectedCourseId = null;
     _selectedChapterId = null;
     _selectedVideo = null;
+    _selectedNote = null;
     notifyListeners();
   }
 
-  // Clear all student data (for logout)
   void clearData() {
     _student = null;
     _courses = [];
@@ -127,7 +130,6 @@ class StudentProvider with ChangeNotifier {
     resetSelection();
   }
 
-  // Helper methods for state management
   void _setLoading(bool loading) {
     _isLoading = loading;
     notifyListeners();
@@ -139,7 +141,6 @@ class StudentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Mark a video as completed
   Future<void> markVideoAsCompleted(VideoModel video) async {
     if (_student == null || _selectedCourseId == null) return;
     try {
@@ -149,7 +150,6 @@ class StudentProvider with ChangeNotifier {
         courseId: _selectedCourseId!,
         chapterId: video.chapterId,
       );
-      // Update the selected video if it's the one being marked
       if (_selectedVideo?.id == video.id) {
         _selectedVideo = VideoModel(
           id: video.id,
@@ -157,7 +157,10 @@ class StudentProvider with ChangeNotifier {
           description: video.description,
           videoId: video.videoId,
           chapterId: video.chapterId,
-          completed: true, link: video.link,courseId: video.courseId, order: video.order,
+          completed: true,
+          link: video.link,
+          courseId: video.courseId,
+          order: video.order,
         );
       }
       notifyListeners();
@@ -173,7 +176,6 @@ class StudentProvider with ChangeNotifier {
         uid: _student!.id,
         videoId: video.id,
       );
-      // Update the selected video if it's the one being unmarked
       if (_selectedVideo?.id == video.id) {
         _selectedVideo = VideoModel(
           id: video.id,
@@ -193,7 +195,58 @@ class StudentProvider with ChangeNotifier {
     }
   }
 
-  // Stream video progress for the current course
+  Future<void> markNoteAsCompleted(NoteModel note) async {
+    if (_student == null || _selectedCourseId == null) return;
+    try {
+      await _firestoreService.markNoteAsCompleted(
+        uid: _student!.id,
+        noteId: note.id,
+        courseId: _selectedCourseId!,
+        chapterId: note.chapterId,
+      );
+      if (_selectedNote?.id == note.id) {
+        _selectedNote = NoteModel(
+          id: note.id,
+          name: note.name,
+          description: note.description,
+          link: note.link,
+          courseId: note.courseId,
+          chapterId: note.chapterId,
+          order: note.order,
+          completed: true,
+        );
+      }
+      notifyListeners();
+    } catch (e) {
+      // Handle error appropriately
+    }
+  }
+
+  Future<void> unmarkNoteAsCompleted(NoteModel note) async {
+    if (_student == null || _selectedCourseId == null) return;
+    try {
+      await _firestoreService.unmarkNoteAsCompleted(
+        uid: _student!.id,
+        noteId: note.id,
+      );
+      if (_selectedNote?.id == note.id) {
+        _selectedNote = NoteModel(
+          id: note.id,
+          name: note.name,
+          description: note.description,
+          link: note.link,
+          courseId: note.courseId,
+          chapterId: note.chapterId,
+          order: note.order,
+          completed: false,
+        );
+      }
+      notifyListeners();
+    } catch (e) {
+      // Handle error appropriately
+    }
+  }
+
   Stream<List<Map<String, dynamic>>>? getVideoProgress() {
     if (_student == null || _selectedCourseId == null) return null;
     return _firestoreService.streamVideoProgress(
@@ -202,15 +255,26 @@ class StudentProvider with ChangeNotifier {
     );
   }
 
-  // Get chapter progress
+  Stream<List<Map<String, dynamic>>>? getNoteProgress() {
+    if (_student == null || _selectedCourseId == null) return null;
+    return _firestoreService.streamNoteProgress(
+      uid: _student!.id,
+      courseId: _selectedCourseId!,
+    );
+  }
+
   Future<Map<String, int>> getChapterProgress(String chapterId) async {
     if (_student == null || _selectedCourseId == null) {
-      return {'totalVideos': 0, 'completedVideos': 0};
+      return {
+        'totalItems': 0,
+        'completedItems': 0,
+      };
     }
-    return await _firestoreService.getChapterProgress(
+    final progress = await _firestoreService.getChapterProgress(
       uid: _student!.id,
       courseId: _selectedCourseId!,
       chapterId: chapterId,
     );
+    return progress;
   }
 }
