@@ -159,6 +159,11 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
               loop: false,
               isLive: false,
               forceHD: true,
+              // MODIFICATION: Hide thumbnail on pause and reduce branding.
+              // This prevents the video thumbnail from showing when paused.
+              hideThumbnail: true,
+              // This reduces the YouTube logo in the control bar.
+
             ),
           );
 
@@ -417,10 +422,10 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                   icon: Icon(Icons.refresh, size: 20, color: colorScheme.onPrimary),
                   label: Text('Retry', style: TextStyle(color: colorScheme.onPrimary)),
                   style: theme.elevatedButtonTheme.style?.copyWith(
-                    padding: WidgetStateProperty.all(
+                    padding: MaterialStateProperty.all(
                       const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                     ),
-                    shape: WidgetStateProperty.all(
+                    shape: MaterialStateProperty.all(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
