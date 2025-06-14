@@ -86,7 +86,7 @@ class CourseScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: [
                         Theme.of(context).colorScheme.primary,
-                        Theme.of(context).colorScheme.secondary,
+                       Theme.of(context).colorScheme.secondary,
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -225,9 +225,9 @@ class CourseScreen extends StatelessWidget {
                       builder: (context, progressSnapshot) {
                         double completionPercentage = 0.0;
                         if (progressSnapshot.hasData) {
-                          final totalVideos = progressSnapshot.data!['totalVideos'] ?? 0;
-                          final completedVideos = progressSnapshot.data!['completedVideos'] ?? 0;
-                          completionPercentage = totalVideos > 0 ? (completedVideos / totalVideos) * 100 : 0.0;
+                          final totalItems = progressSnapshot.data!['totalItems'] ?? 0;
+                          final completedItems = progressSnapshot.data!['completedItems'] ?? 0;
+                          completionPercentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0.0;
                         }
 
                         return Stack(

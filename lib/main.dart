@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:flutter_root_checker/flutter_root_checker.dart';
+import 'package:mrcavirtuals/providers/quiz_provider.dart';
 import 'package:mrcavirtuals/services/auth_service.dart';
 import 'package:mrcavirtuals/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:secure_content/secure_content.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import 'providers/auth_provider.dart';
 import 'providers/student_provider.dart';
 import 'providers/theme_provider.dart';
@@ -16,15 +18,22 @@ void main() async {
   await Firebase.initializeApp();
 
   bool isDeviceRooted = false;
+  bool isEmulator = false;
 
   if (Platform.isAndroid) {
+    // Check for root
     isDeviceRooted = FlutterRootChecker.isAndroidRoot;
     SecureContent().preventScreenshotAndroid(true);
+
+    // Check for emulator
+    isEmulator = await _isAndroidEmulator();
   } else if (Platform.isIOS) {
+    // Check for jailbreak
     isDeviceRooted = FlutterRootChecker.isIosJailbreak;
   }
 
-  if (isDeviceRooted) {
+  // Deny access if device is rooted, jailbroken, or an emulator
+  if (isDeviceRooted || isEmulator) {
     runApp(
       MultiProvider(
         providers: [
@@ -37,7 +46,7 @@ void main() async {
               theme: ThemeProvider.lightTheme,
               darkTheme: ThemeProvider.darkTheme,
               themeMode: themeProvider.themeMode,
-              home: const RootedDeviceScreen(),
+              home: RootedDeviceScreen(isEmulator: isEmulator), // Pass emulator flag
             );
           },
         ),
@@ -52,13 +61,53 @@ void main() async {
   }
 }
 
+// Function to detect Android emulator
+Future<bool> _isAndroidEmulator() async {
+  final deviceInfo = DeviceInfoPlugin();
+  final androidInfo = await deviceInfo.androidInfo;
+
+  // Common emulator indicators
+  final String model = androidInfo.model.toLowerCase();
+  final String manufacturer = androidInfo.manufacturer.toLowerCase();
+  final String brand = androidInfo.brand.toLowerCase();
+  final String product = androidInfo.product.toLowerCase();
+  final String hardware = androidInfo.hardware.toLowerCase();
+  final String fingerprint = androidInfo.fingerprint.toLowerCase();
+
+  // Check for known emulator properties
+  return [
+    // Generic emulator keywords
+    model.contains('emulator'),
+    model.contains('sdk_gphone'),
+    model.contains('google_sdk'),
+    manufacturer.contains('genymotion'),
+    brand.contains('generic'),
+    product.contains('emulator'),
+    product.contains('sdk'),
+    product.contains('vbox'),
+    hardware.contains('goldfish'),
+    hardware.contains('ranchu'),
+    hardware.contains('vbox'),
+    fingerprint.contains('generic'),
+    // Specific emulator fingerprints
+    androidInfo.isPhysicalDevice == false, // Most reliable check
+  ].any((condition) => condition);
+}
+
 class RootedDeviceScreen extends StatelessWidget {
-  const RootedDeviceScreen({super.key});
+  final bool isEmulator; // Add emulator flag
+
+  const RootedDeviceScreen({super.key, this.isEmulator = false});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+
+    // Customize message based on emulator or rooted device
+    final String message = isEmulator
+        ? 'For security reasons, this app cannot run on emulators. Please use a physical device.'
+        : 'For security reasons, this app cannot run on rooted or jailbroken devices. We prioritize the safety of our data. Kindly unroot or try using the app in another device';
 
     return Scaffold(
       body: Container(
@@ -102,7 +151,7 @@ class RootedDeviceScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'For security reasons, this app cannot run on rooted or jailbroken devices. We prioritize the safety of our data. Kindly unroot or try using the app in another device',
+                      message,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurface.withOpacity(0.7),
@@ -151,6 +200,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider(AuthService())),
         ChangeNotifierProvider(create: (_) => StudentProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => QuizProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

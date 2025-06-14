@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mrcavirtuals/screens/quiz_selection_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/student_provider.dart';
@@ -46,6 +47,20 @@ class DashboardScreen extends StatelessWidget {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.quiz ,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const QuizSelectionScreen(), // quiz
+                ),
+              );
+            },
+            tooltip: 'Attempt Quiz',
+          ),
           IconButton(
             icon: Icon(
               themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:mrcavirtuals/screens/quiz_selection_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/auth_provider.dart';
 import '../providers/student_provider.dart';
 import 'dashboard_screen.dart';
+//import 'quiz_screen.dart'; // Add this import for your quiz screen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -175,6 +177,14 @@ class _LoginScreenState extends State<LoginScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  void _skipToQuiz() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const QuizSelectionScreen(), // Replace with your actual quiz screen
+      ),
+    );
   }
 
   @override
@@ -458,6 +468,39 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Skip button for practicing quiz
+                      TextButton(
+                        onPressed: _isLoading ? null : _skipToQuiz,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.quiz,
+                              size: 20,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Practice Quiz for free',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.primary,
+                                decoration: TextDecoration.underline,
+                                decorationColor: theme.colorScheme.primary.withOpacity(0.6),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
