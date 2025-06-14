@@ -12,7 +12,20 @@
           "package_name": "com.kirubakaran.mrcavirtuals"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "699455540180-052bfg5l7qq9immjmbgarotr6g4bf196.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.kirubakaran.mrcavirtuals",
+            "certificate_hash": "a38774bd9020013604a5779a795ae21c6d709e83"
+          }
+        },
+        {
+          "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDzZZsCgU0hTXQUGBjBtswjigB4uUnIAB0"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "699455540180-uj7pjd20e8mcn5529b3nu5fdr4ao7qai.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kirubakaran.mrcavirtualsadmin"
+              }
+            }
+          ]
         }
       }
     },
@@ -31,7 +56,12 @@
           "package_name": "com.kirubakaran.mrcavirtualsadmin"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDzZZsCgU0hTXQUGBjBtswjigB4uUnIAB0"
@@ -39,7 +69,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "699455540180-uj7pjd20e8mcn5529b3nu5fdr4ao7qai.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.kirubakaran.mrcavirtualsadmin"
+              }
+            }
+          ]
         }
       }
     }
