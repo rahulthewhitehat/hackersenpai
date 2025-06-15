@@ -9,7 +9,6 @@ class DeviceInfoService {
     try {
       if (Platform.isAndroid) {
         final androidInfo = await _deviceInfoPlugin.androidInfo;
-        //print("Serial Number ${androidInfo.data}");
         // Use serialNumber as the primary identifier
         // Fall back to androidId if serialNumber is not available
         if (androidInfo.serialNumber.isNotEmpty &&
@@ -22,6 +21,16 @@ class DeviceInfoService {
       } else if (Platform.isIOS) {
         final iosInfo = await _deviceInfoPlugin.iosInfo;
         return iosInfo.identifierForVendor ?? 'unknown';
+      } else if (Platform.isWindows) {
+        final windowsInfo = await _deviceInfoPlugin.windowsInfo;
+        // Combine computerName and buildNumber for a unique identifier
+        // systemUuid may not be available without elevated permissions
+        if (windowsInfo.computerName.isNotEmpty) {
+          return '${windowsInfo.computerName}_${windowsInfo.buildNumber}';
+        } else {
+          // Fallback to a combination of other properties
+          return 'windows_${windowsInfo.buildNumber}_${windowsInfo.productName}';
+        }
       }
       return 'unknown_platform';
     } catch (e) {
