@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:mrcavirtuals/screens/video_playlist_screen_windows.dart';
 import 'package:provider/provider.dart';
 import '../models/chapter_model.dart';
 import '../providers/student_provider.dart';
@@ -237,10 +240,14 @@ class CourseScreen extends StatelessWidget {
                               isSelected: isSelected,
                               onTap: () {
                                 studentProvider.selectChapter(chapter.id);
-                                Navigator.push(
-                                  context,
+                                Navigator.of(context).push(
                                   MaterialPageRoute(
-                                    builder: (_) => VideoPlaylistScreen(
+                                    builder: (_) => Platform.isWindows
+                                        ? WindowsVideoPlaylistScreen(
+                                      courseId: courseId,
+                                      chapterId: chapter.id,
+                                    )
+                                        : VideoPlaylistScreen(
                                       courseId: courseId,
                                       chapterId: chapter.id,
                                     ),

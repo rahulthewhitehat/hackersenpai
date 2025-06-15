@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_portal/flutter_portal.dart';
 import 'package:flutter_root_checker/flutter_root_checker.dart';
 import 'package:mrcavirtuals/providers/quiz_provider.dart';
@@ -20,6 +22,22 @@ void main() async {
   await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform
   );
+
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.windows) {
+    final availableVersion = await WebViewEnvironment.getAvailableVersion();
+    if (availableVersion == null) {
+      throw Exception('Failed to find an installed WebView2 runtime or non-stable Microsoft Edge installation.');
+    }
+
+    await WebViewEnvironment.create(
+      settings: WebViewEnvironmentSettings(userDataFolder: 'custom_path'),
+    );
+  }
+
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    await InAppWebViewController.setWebContentsDebuggingEnabled(kDebugMode);
+  }
+
 
   bool isDeviceRooted = false;
   bool isEmulator = false;

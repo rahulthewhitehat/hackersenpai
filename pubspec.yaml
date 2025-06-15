@@ -29,7 +29,7 @@ dependencies:
   flutter_pdfview: ^1.4.0+1
   http: ^1.4.0
   path_provider: ^2.1.5
-  youtube_player_iframe: ^5.2.1
+  flutter_inappwebview: ^6.1.5
 
 dev_dependencies:
   flutter_test:
