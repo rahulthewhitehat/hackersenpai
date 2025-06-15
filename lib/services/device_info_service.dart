@@ -26,10 +26,10 @@ class DeviceInfoService {
         // Combine computerName and buildNumber for a unique identifier
         // systemUuid may not be available without elevated permissions
         if (windowsInfo.computerName.isNotEmpty) {
-          return '${windowsInfo.computerName}_${windowsInfo.buildNumber}';
+          return '${windowsInfo.computerName}_${windowsInfo.buildNumber}_${windowsInfo.productId}';
         } else {
           // Fallback to a combination of other properties
-          return 'windows_${windowsInfo.buildNumber}_${windowsInfo.productName}';
+          return 'windows_${windowsInfo.buildNumber}_${windowsInfo.productId}';
         }
       }
       return 'unknown_platform';

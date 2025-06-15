@@ -5,7 +5,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/auth_provider.dart';
 import '../providers/student_provider.dart';
 import 'dashboard_screen.dart';
-//import 'quiz_screen.dart'; // Add this import for your quiz screen
+import 'quiz_screen.dart'; // Add this import for your quiz screen
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
