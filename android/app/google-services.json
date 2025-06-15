@@ -39,10 +39,10 @@
               "client_type": 3
             },
             {
-              "client_id": "699455540180-uj7pjd20e8mcn5529b3nu5fdr4ao7qai.apps.googleusercontent.com",
+              "client_id": "699455540180-52rcfpuu7g6bo95g50mdsqeig71i2j93.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.kirubakaran.mrcavirtualsadmin"
+                "bundle_id": "com.kirubakaran.mrcavirtuals"
               }
             }
           ]
@@ -75,10 +75,10 @@
               "client_type": 3
             },
             {
-              "client_id": "699455540180-uj7pjd20e8mcn5529b3nu5fdr4ao7qai.apps.googleusercontent.com",
+              "client_id": "699455540180-52rcfpuu7g6bo95g50mdsqeig71i2j93.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.kirubakaran.mrcavirtualsadmin"
+                "bundle_id": "com.kirubakaran.mrcavirtuals"
               }
             }
           ]
