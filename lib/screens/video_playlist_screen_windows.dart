@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:mrcavirtuals/screens/pdf_viewer_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -14,7 +15,7 @@ import '../providers/theme_provider.dart';
 import '../widgets/video_list_item.dart';
 import '../widgets/note_list_item.dart';
 import '../widgets/floating_watermark.dart';
-import './pdf_viewer_screen.dart';
+import './windows_pdf_viewer_screen.dart';
 
 class WindowsVideoPlaylistScreen extends StatefulWidget {
   final String courseId;
@@ -62,7 +63,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
 
   Future<void> _initializeScreen() async {
     try {
-      final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+      final studentProvider = Provider.of<StudentProvider>(
+          context, listen: false);
 
       final chaptersStream = studentProvider.getChapters();
       if (chaptersStream == null) {
@@ -94,7 +96,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
         _currentVideo = studentProvider.selectedVideo ?? chapterVideo;
 
         if (_currentVideo == null ||
-            (_currentVideo!.chapterId != widget.chapterId && videos.any((v) => v.chapterId == widget.chapterId))) {
+            (_currentVideo!.chapterId != widget.chapterId &&
+                videos.any((v) => v.chapterId == widget.chapterId))) {
           _currentVideo = videos.firstWhere(
                 (v) => v.chapterId == widget.chapterId,
             orElse: () => videos.first,
@@ -104,7 +107,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
 
         final videoId = _currentVideo!.videoId;
         if (videoId.isEmpty) {
-          throw Exception('Invalid YouTube video ID for video: ${_currentVideo!.name}');
+          throw Exception(
+              'Invalid YouTube video ID for video: ${_currentVideo!.name}');
         }
 
         _isInitialized = true;
@@ -148,7 +152,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
     if (_currentVideo?.id == video.id && _webViewController != null) return;
 
     _progressTimer?.cancel();
-    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+    final studentProvider = Provider.of<StudentProvider>(
+        context, listen: false);
     studentProvider.selectVideo(video);
 
     if (mounted) {
@@ -266,7 +271,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
         setState(() {
           _videoDuration = double.tryParse(duration.toString()) ?? 0.0;
           _videoProgress = _videoDuration > 0
-              ? (double.tryParse(currentTime.toString()) ?? 0.0) / _videoDuration
+              ? (double.tryParse(currentTime.toString()) ?? 0.0) /
+              _videoDuration
               : 0.0;
           _isPlaying = !(isPaused == true);
         });
@@ -304,22 +310,47 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
 
   Future<void> _changeNote(NoteModel note) async {
     _progressTimer?.cancel();
-    final studentProvider = Provider.of<StudentProvider>(context, listen: false);
+    final studentProvider = Provider.of<StudentProvider>(
+        context, listen: false);
     studentProvider.selectNote(note);
 
     try {
+      if (kDebugMode) {
+        print('Downloading PDF from: ${note.link}');
+      }
       final response = await http.get(Uri.parse(note.link));
       if (response.statusCode == 200) {
         final dir = await getTemporaryDirectory();
         final file = File('${dir.path}/${note.id}.pdf');
+        if (kDebugMode) {
+          print('Saving PDF to: ${file.path}');
+        }
         await file.writeAsBytes(response.bodyBytes);
+        // Verify file was written
+        final exists = await file.exists();
+        final stat = await file.stat();
+        if (kDebugMode) {
+          print('PDF file exists: $exists, size: ${stat.size} bytes');
+        }
+        if (!exists || stat.size == 0) {
+          throw Exception('Failed to save PDF file');
+        }
         final student = studentProvider.student;
-        final watermarkText = "${student?.email ?? ''}\n${student?.studentId ?? ''}";
+        final watermarkText = "${student?.email ?? ''}\n${student?.studentId ??
+            ''}";
         if (mounted) {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => PDFViewerScreen(
+              builder: (context) =>
+              Platform.isWindows
+                  ? WindowsPDFViewerScreen(
+                pdfPath: file.path,
+                noteName: note.name,
+                noteDescription: note.description,
+                watermarkText: watermarkText,
+              )
+                  : PDFViewerScreen(
                 pdfPath: file.path,
                 noteName: note.name,
                 noteDescription: note.description,
@@ -329,9 +360,12 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
           );
         }
       } else {
-        throw Exception('Failed to download PDF');
+        throw Exception('Failed to download PDF: HTTP ${response.statusCode}');
       }
     } catch (e) {
+      if (kDebugMode) {
+        print('Error loading note: $e');
+      }
       if (mounted) {
         setState(() {
           _isError = true;
@@ -365,7 +399,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final studentProvider = Provider.of<StudentProvider>(context);
-    final watermarkText = "${studentProvider.student?.email ?? ''}\n${studentProvider.student?.studentId ?? ''}";
+    final watermarkText = "${studentProvider.student?.email ??
+        ''}\n${studentProvider.student?.studentId ?? ''}";
 
     return Stack(
       children: [
@@ -377,7 +412,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
             key: ValueKey(_currentVideo!.id),
             initialUrlRequest: URLRequest(
               url: WebUri(
-                  'https://www.youtube-nocookie.com/embed/${_currentVideo!.videoId}?autoplay=1&origin=https://www.youtube.com&controls=0&rel=0&modestbranding=1&showinfo=0'),
+                  'https://www.youtube-nocookie.com/embed/${_currentVideo!
+                      .videoId}?autoplay=1&origin=https://www.youtube.com&controls=0&rel=0&modestbranding=1&showinfo=0'),
               headers: {
                 'Referer': 'https://www.youtube.com',
               },
@@ -414,7 +450,9 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
             },
             shouldOverrideUrlLoading: (controller, navigationAction) async {
               final url = navigationAction.request.url.toString();
-              if (url.startsWith('https://www.youtube-nocookie.com/embed/${_currentVideo!.videoId}')) {
+              if (url.startsWith(
+                  'https://www.youtube-nocookie.com/embed/${_currentVideo!
+                      .videoId}')) {
                 return NavigationActionPolicy.ALLOW;
               }
               return NavigationActionPolicy.CANCEL;
@@ -460,7 +498,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
               : Center(
             child: Text(
               'No video selected',
-              style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.onSurface),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface),
             ),
           ),
         ),
@@ -502,7 +541,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                         LinearProgressIndicator(
                           value: _videoProgress,
                           backgroundColor: Colors.grey.withOpacity(0.3),
-                          valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                              colorScheme.primary),
                         ),
                         Positioned(
                           left: _videoProgress * constraints.maxWidth - 6,
@@ -537,7 +577,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                         icon: const Icon(Icons.replay_10, color: Colors.white),
                         onPressed: () async {
                           final currentTime = await _getCurrentTime() ?? 0.0;
-                          await _setCurrentTime((currentTime - 10).clamp(0.0, _videoDuration));
+                          await _setCurrentTime((currentTime - 10).clamp(0.0,
+                              _videoDuration));
                           await _updateProgress();
                         },
                       ),
@@ -545,7 +586,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                         icon: const Icon(Icons.forward_10, color: Colors.white),
                         onPressed: () async {
                           final currentTime = await _getCurrentTime() ?? 0.0;
-                          await _setCurrentTime((currentTime + 10).clamp(0.0, _videoDuration));
+                          await _setCurrentTime((currentTime + 10).clamp(0.0,
+                              _videoDuration));
                           await _updateProgress();
                         },
                       ),
@@ -568,7 +610,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                         },
                         dropdownColor: Colors.black.withOpacity(0.8),
                         style: const TextStyle(color: Colors.white),
-                        icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                        icon: const Icon(
+                            Icons.arrow_drop_down, color: Colors.white),
                       ),
                       const SizedBox(width: 8),
                       IconButton(
@@ -582,17 +625,20 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => FullScreenVideoPlayer(
-                                    video: _currentVideo!,
-                                    watermarkText: watermarkText,
-                                    initialTime: currentTime,
-                                    initialSpeed: _playbackSpeed,
-                                  ),
+                                  builder: (context) =>
+                                      FullScreenVideoPlayer(
+                                        video: _currentVideo!,
+                                        watermarkText: watermarkText,
+                                        initialTime: currentTime,
+                                        initialSpeed: _playbackSpeed,
+                                      ),
                                 ),
                               );
                               if (result is Map && mounted) {
-                                await _setCurrentTime(result['currentTime'] ?? 0.0);
-                                await _setPlaybackSpeed(result['playbackSpeed'] ?? 1.0);
+                                await _setCurrentTime(
+                                    result['currentTime'] ?? 0.0);
+                                await _setPlaybackSpeed(
+                                    result['playbackSpeed'] ?? 1.0);
                                 if (result['isPlaying'] == true) {
                                   await _playVideo();
                                 } else {
@@ -625,11 +671,13 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: studentProvider.getVideoProgress(),
           builder: (context, progressSnapshot) {
-            if (videoSnapshot.connectionState == ConnectionState.waiting && !videoSnapshot.hasData) {
+            if (videoSnapshot.connectionState == ConnectionState.waiting &&
+                !videoSnapshot.hasData) {
               return Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      colorScheme.primary),
                 ),
               );
             }
@@ -687,7 +735,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                 ),
               );
             }
-            final videos = allVideos.where((video) => video.chapterId == widget.chapterId).toList();
+            final videos = allVideos.where((video) =>
+            video.chapterId == widget.chapterId).toList();
 
             if (videos.isEmpty) {
               return Center(
@@ -735,15 +784,17 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
             return ListView.separated(
               itemCount: updatedVideos.length,
               padding: const EdgeInsets.only(bottom: 32, top: 12),
-              separatorBuilder: (context, index) => Divider(
-                indent: 16,
-                endIndent: 16,
-                height: 1,
-                color: colorScheme.outlineVariant.withOpacity(0.5),
-              ),
+              separatorBuilder: (context, index) =>
+                  Divider(
+                    indent: 16,
+                    endIndent: 16,
+                    height: 1,
+                    color: colorScheme.outlineVariant.withOpacity(0.5),
+                  ),
               itemBuilder: (context, index) {
                 final video = updatedVideos[index];
-                final isSelected = _currentVideo != null && _currentVideo!.id == video.id;
+                final isSelected = _currentVideo != null &&
+                    _currentVideo!.id == video.id;
 
                 return VideoListItem(
                   video: video,
@@ -768,11 +819,13 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
         return StreamBuilder<List<Map<String, dynamic>>>(
           stream: studentProvider.getNoteProgress(),
           builder: (context, progressSnapshot) {
-            if (noteSnapshot.connectionState == ConnectionState.waiting && !noteSnapshot.hasData) {
+            if (noteSnapshot.connectionState == ConnectionState.waiting &&
+                !noteSnapshot.hasData) {
               return Center(
                 child: CircularProgressIndicator(
                   strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                      colorScheme.primary),
                 ),
               );
             }
@@ -830,7 +883,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                 ),
               );
             }
-            final notes = allNotes.where((note) => note.chapterId == widget.chapterId).toList();
+            final notes = allNotes.where((note) =>
+            note.chapterId == widget.chapterId).toList();
 
             if (notes.isEmpty) {
               return Center(
@@ -877,15 +931,17 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
             return ListView.separated(
               itemCount: updatedNotes.length,
               padding: const EdgeInsets.only(bottom: 32, top: 12),
-              separatorBuilder: (context, index) => Divider(
-                indent: 16,
-                endIndent: 16,
-                height: 1,
-                color: colorScheme.outlineVariant.withOpacity(0.5),
-              ),
+              separatorBuilder: (context, index) =>
+                  Divider(
+                    indent: 16,
+                    endIndent: 16,
+                    height: 1,
+                    color: colorScheme.outlineVariant.withOpacity(0.5),
+                  ),
               itemBuilder: (context, index) {
                 final note = updatedNotes[index];
-                final isSelected = _currentNote != null && _currentNote!.id == note.id;
+                final isSelected = _currentNote != null &&
+                    _currentNote!.id == note.id;
 
                 return NoteListItem(
                   note: note,
@@ -900,13 +956,132 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
     );
   }
 
+  Widget _buildProgressIndicator(StudentProvider studentProvider) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkMode = Provider
+        .of<ThemeProvider>(context)
+        .isDarkMode;
+
+    return StreamBuilder<List<VideoModel>>(
+      stream: studentProvider.getVideos(),
+      builder: (context, videoSnapshot) {
+        return StreamBuilder<List<NoteModel>>(
+          stream: studentProvider.getNotes(),
+          builder: (context, noteSnapshot) {
+            return StreamBuilder<List<Map<String, dynamic>>>(
+              stream: studentProvider.getVideoProgress(),
+              builder: (context, videoProgressSnapshot) {
+                return StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: studentProvider.getNoteProgress(),
+                  builder: (context, noteProgressSnapshot) {
+                    int totalVideos = 0;
+                    int totalNotes = 0;
+                    int completedVideos = 0;
+                    int completedNotes = 0;
+
+                    // Calculate total videos
+                    if (videoSnapshot.hasData) {
+                      totalVideos = videoSnapshot.data!
+                          .where((video) => video.chapterId == widget.chapterId)
+                          .length;
+                    }
+
+                    // Calculate total notes
+                    if (noteSnapshot.hasData) {
+                      totalNotes = noteSnapshot.data!
+                          .where((note) => note.chapterId == widget.chapterId)
+                          .length;
+                    }
+
+                    // Calculate completed videos
+                    if (videoProgressSnapshot.hasData) {
+                      completedVideos = videoProgressSnapshot.data!
+                          .where((progress) =>
+                      progress['chapterId'] == widget.chapterId &&
+                          progress['completed'] == true)
+                          .length;
+                    }
+
+                    // Calculate completed notes
+                    if (noteProgressSnapshot.hasData) {
+                      completedNotes = noteProgressSnapshot.data!
+                          .where((progress) =>
+                      progress['chapterId'] == widget.chapterId &&
+                          progress['completed'] == true)
+                          .length;
+                    }
+
+                    final totalItems = totalVideos + totalNotes;
+                    final completedItems = completedVideos + completedNotes;
+                    final completionPercentage =
+                    totalItems > 0 ? (completedItems / totalItems) * 100 : 0.0;
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16,
+                          vertical: 8),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.onSurface
+                                .withOpacity(isDarkMode ? 0.05 : 0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Progress: $completedItems/$totalItems items',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              Text(
+                                '${completionPercentage.toStringAsFixed(
+                                    0)}% Complete',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Videos: $completedVideos/$totalVideos | Notes: $completedNotes/$totalNotes',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isDarkMode = themeProvider.isDarkMode;
 
     if (_isLoading) {
       return Scaffold(
@@ -932,7 +1107,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
       );
     }
 
-    if (_isError || !_isInitialized || (_currentVideo == null && _currentNote == null)) {
+    if (_isError || !_isInitialized ||
+        (_currentVideo == null && _currentNote == null)) {
       return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
@@ -972,7 +1148,9 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  _errorMessage.isNotEmpty ? _errorMessage : 'Could not load content.',
+                  _errorMessage.isNotEmpty
+                      ? _errorMessage
+                      : 'Could not load content.',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: colorScheme.error,
@@ -985,7 +1163,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                   icon: const Icon(Icons.refresh, size: 20),
                   label: const Text('Retry'),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -1048,14 +1227,18 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                             ),
                             textAlign: TextAlign.center,
                           ),
-                          if ((_currentVideo?.description ?? _currentNote?.description ?? '').isNotEmpty)
+                          if ((_currentVideo?.description ??
+                              _currentNote?.description ?? '')
+                              .isNotEmpty)
                             Column(
                               children: [
                                 const SizedBox(height: 8),
                                 Text(
-                                  _currentVideo?.description ?? _currentNote?.description ?? '',
+                                  _currentVideo?.description ??
+                                      _currentNote?.description ?? '',
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: colorScheme.onSurface.withOpacity(0.7),
+                                    color: colorScheme.onSurface.withOpacity(
+                                        0.7),
                                   ),
                                   textAlign: TextAlign.center,
                                   maxLines: 2,
@@ -1067,55 +1250,7 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                       ),
                     ),
                   ),
-                StreamBuilder<Map<String, int>>(
-                  stream: studentProvider.getChapterProgress(widget.chapterId).asStream(),
-                  builder: (context, snapshot) {
-                    int totalItems = 0;
-                    int completedItems = 0;
-                    double completionPercentage = 0.0;
-
-                    if (snapshot.hasData) {
-                      totalItems = snapshot.data!['totalItems'] ?? 0;
-                      completedItems = snapshot.data!['completedItems'] ?? 0;
-                      completionPercentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0.0;
-                    }
-
-                    return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: colorScheme.onSurface.withOpacity(isDarkMode ? 0.05 : 0.1),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Progress: $completedItems/$totalItems items',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          Text(
-                            '${completionPercentage.toStringAsFixed(0)}% Complete',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                _buildProgressIndicator(studentProvider),
               ],
             ),
           ),
@@ -1124,7 +1259,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
             child: Column(
               children: [
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 8),
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
@@ -1142,9 +1278,12 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
                             decoration: BoxDecoration(
-                              color: !_showNotes ? colorScheme.primary : colorScheme.surface,
+                              color: !_showNotes
+                                  ? colorScheme.primary
+                                  : colorScheme.surface,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -1170,9 +1309,12 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                             }
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
                             decoration: BoxDecoration(
-                              color: _showNotes ? colorScheme.primary : colorScheme.surface,
+                              color: _showNotes
+                                  ? colorScheme.primary
+                                  : colorScheme.surface,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -1192,7 +1334,8 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: colorScheme.surface,
                     border: Border(
@@ -1237,7 +1380,9 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
                   ),
                 ),
                 Expanded(
-                  child: _showNotes ? _buildNoteList(studentProvider) : _buildVideoList(studentProvider),
+                  child: _showNotes
+                      ? _buildNoteList(studentProvider)
+                      : _buildVideoList(studentProvider),
                 ),
               ],
             ),
@@ -1247,6 +1392,7 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
     );
   }
 }
+
 
 class FullScreenVideoPlayer extends StatefulWidget {
   final VideoModel video;

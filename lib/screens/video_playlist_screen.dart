@@ -671,6 +671,120 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
     );
   }
 
+  Widget _buildProgressIndicator(StudentProvider studentProvider) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDarkMode = Provider.of<ThemeProvider>(context).isDarkMode;
+
+    return StreamBuilder<List<VideoModel>>(
+      stream: studentProvider.getVideos(),
+      builder: (context, videoSnapshot) {
+        return StreamBuilder<List<NoteModel>>(
+          stream: studentProvider.getNotes(),
+          builder: (context, noteSnapshot) {
+            return StreamBuilder<List<Map<String, dynamic>>>(
+              stream: studentProvider.getVideoProgress(),
+              builder: (context, videoProgressSnapshot) {
+                return StreamBuilder<List<Map<String, dynamic>>>(
+                  builder: (context, noteProgressSnapshot) {
+                    int totalVideos = 0;
+                    int totalNotes = 0;
+                    int completedVideos = 0;
+                    int completedNotes = 0;
+
+                    // Calculate total videos
+                    if (videoSnapshot.hasData) {
+                      totalVideos = videoSnapshot.data!
+                          .where((video) => video.chapterId == widget.chapterId)
+                          .length;
+                    }
+
+                    // Calculate total notes
+                    if (noteSnapshot.hasData) {
+                      totalNotes = noteSnapshot.data!
+                          .where((note) => note.chapterId == widget.chapterId)
+                          .length;
+                    }
+
+                    // Calculate completed videos
+                    if (videoProgressSnapshot.hasData) {
+                      completedVideos = videoProgressSnapshot.data!
+                          .where((progress) =>
+                      progress['chapterId'] == widget.chapterId &&
+                          progress['completed'] == true)
+                          .length;
+                    }
+
+                    // Calculate completed notes
+                    if (noteProgressSnapshot.hasData) {
+                      completedNotes = noteProgressSnapshot.data!
+                          .where((progress) =>
+                      progress['chapterId'] == widget.chapterId &&
+                          progress['completed'] == true)
+                          .length;
+                    }
+
+                    final totalItems = totalVideos + totalNotes;
+                    final completedItems = completedVideos + completedNotes;
+                    final completionPercentage =
+                    totalItems > 0 ? (completedItems / totalItems) * 100 : 0.0;
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: colorScheme.onSurface
+                                .withOpacity(isDarkMode ? 0.05 : 0.1),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Progress: $completedItems/$totalItems items',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ),
+                              Text(
+                                '${completionPercentage.toStringAsFixed(0)}% Complete',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Videos: $completedVideos/$totalVideos | Notes: $completedNotes/$totalNotes',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurface.withOpacity(0.7),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }, stream: null,
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
@@ -968,55 +1082,7 @@ class _VideoPlaylistScreenState extends State<VideoPlaylistScreen> with WidgetsB
                     ),
                   ),
                 ),
-              StreamBuilder<Map<String, int>>(
-                stream: studentProvider.getChapterProgress(widget.chapterId).asStream(),
-                builder: (context, snapshot) {
-                  int totalItems = 0;
-                  int completedItems = 0;
-                  double completionPercentage = 0.0;
-
-                  if (snapshot.hasData) {
-                    totalItems = snapshot.data!['totalItems'] ?? 0;
-                    completedItems = snapshot.data!['completedItems'] ?? 0;
-                    completionPercentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0.0;
-                  }
-
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.onSurface.withOpacity(isDarkMode ? 0.05 : 0.1),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Progress: $completedItems/$totalItems items',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                        ),
-                        Text(
-                          '${completionPercentage.toStringAsFixed(0)}% Complete',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
+              _buildProgressIndicator(studentProvider),
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 padding: const EdgeInsets.all(4),
