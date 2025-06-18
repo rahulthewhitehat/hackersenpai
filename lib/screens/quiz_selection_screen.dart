@@ -1,7 +1,9 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/quiz_provider.dart';
 import 'quiz_screen.dart';
+import 'windows_quiz_screen.dart';
 
 class QuizSelectionScreen extends StatefulWidget {
   const QuizSelectionScreen({super.key});
@@ -498,7 +500,6 @@ class _QuizSelectionScreenState extends State<QuizSelectionScreen>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  // FIX STARTS HERE
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -636,7 +637,11 @@ class _QuizSelectionScreenState extends State<QuizSelectionScreen>
                         if (success && context.mounted) {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (_) => const QuizScreen()),
+                            MaterialPageRoute(
+                              builder: (_) => Platform.isWindows
+                                  ? const WindowsQuizScreen()
+                                  : const QuizScreen(),
+                            ),
                           );
                         } else if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
