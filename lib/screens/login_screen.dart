@@ -493,7 +493,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Text(
                               'Practice Quiz for free',
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: 15,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w600,
                                 color: theme.colorScheme.primary,
                                 decoration: TextDecoration.underline,
