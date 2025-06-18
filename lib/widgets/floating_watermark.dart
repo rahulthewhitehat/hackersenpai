@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 class FloatingWatermark extends StatefulWidget {
@@ -77,9 +78,9 @@ class _FloatingWatermarkState extends State<FloatingWatermark> {
               child: Text(
                 widget.text,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.black,
-                  fontSize: 12,
+                  fontSize: Platform.isWindows ? 20 : 12,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'Roboto', // Explicitly set font to ensure consistency
                   decoration: TextDecoration.none, // Prevent any underlines
