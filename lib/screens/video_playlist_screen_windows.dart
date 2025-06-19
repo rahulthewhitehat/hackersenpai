@@ -1079,7 +1079,7 @@ class _WindowsVideoPlaylistScreenState extends State<WindowsVideoPlaylistScreen>
   @override
   Widget build(BuildContext context) {
     final studentProvider = Provider.of<StudentProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
+    final _ = Provider.of<ThemeProvider>(context);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 

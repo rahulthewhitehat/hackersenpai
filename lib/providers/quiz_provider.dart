@@ -31,28 +31,28 @@ class QuizProvider with ChangeNotifier {
       _firestore = FirebaseFirestore.instance;
       _firestore!.settings;
       _isFirestoreInitialized = true;
-      print('Firestore initialized successfully, persistence disabled'); // Debug log
+      //print('Firestore initialized successfully, persistence disabled'); // Debug log
       await _testFirestore();
       notifyListeners();
     } catch (e) {
       _errorMessage = 'Failed to initialize Firestore: $e';
       _isFirestoreInitialized = false;
-      print('Firestore initialization error: $e'); // Debug log
+      //print('Firestore initialization error: $e'); // Debug log
       notifyListeners();
     }
   }
 
   Future<void> _testFirestore() async {
     if (!_isFirestoreInitialized || _firestore == null) {
-      print('Test query skipped: Firestore not initialized'); // Debug log
+      //print('Test query skipped: Firestore not initialized'); // Debug log
       return;
     }
     try {
-      final testSnapshot = await _firestore!.collection('practisemcq').limit(1).get();
-      print('Test query snapshot size: ${testSnapshot.size}'); // Debug log
-      print('Test query docs: ${testSnapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
+      final _ = await _firestore!.collection('practisemcq').limit(1).get();
+      //print('Test query snapshot size: ${testSnapshot.size}'); // Debug log
+      //print('Test query docs: ${testSnapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
     } catch (e) {
-      print('Test query error: $e'); // Debug log
+      //print('Test query error: $e'); // Debug log
     }
   }
 
@@ -77,7 +77,7 @@ class QuizProvider with ChangeNotifier {
       await _initializeFirestore(); // Re-attempt initialization
       if (!_isFirestoreInitialized || _firestore == null) {
         _errorMessage = 'Firestore not initialized after retry';
-        print('Firestore not initialized in fetchCourses'); // Debug log
+        //print('Firestore not initialized in fetchCourses'); // Debug log
         notifyListeners();
         return;
       }
@@ -87,15 +87,15 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('Querying practisemcq collection...'); // Debug log
+      //print('Querying practisemcq collection...'); // Debug log
       final snapshot = await _firestore!.collection('practisemcq').get();
-      print('Snapshot size: ${snapshot.size}'); // Debug log
-      print('Snapshot docs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
-      print('Snapshot metadata: fromCache=${snapshot.metadata.isFromCache}, hasPendingWrites=${snapshot.metadata.hasPendingWrites}'); // Debug log
+      //print('Snapshot size: ${snapshot.size}'); // Debug log
+      //print('Snapshot docs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
+      //print('Snapshot metadata: fromCache=${snapshot.metadata.isFromCache}, hasPendingWrites=${snapshot.metadata.hasPendingWrites}'); // Debug log
 
       _courses = snapshot.docs.map((doc) {
         final data = doc.data();
-        print('Course document ID: ${doc.id}, Data: $data'); // Debug log
+        //print('Course document ID: ${doc.id}, Data: $data'); // Debug log
         return {
           'id': doc.id,
           'name': data['name'] ?? doc.id, // Fallback to ID if no name field
@@ -105,13 +105,13 @@ class QuizProvider with ChangeNotifier {
 
       if (_courses.isEmpty) {
         _errorMessage = 'No courses found in practisemcq collection';
-        print('No courses found in practisemcq'); // Debug log
+        //print('No courses found in practisemcq'); // Debug log
       } else {
-        print('Fetched ${_courses.length} courses: $_courses'); // Debug log
+        //print('Fetched ${_courses.length} courses: $_courses'); // Debug log
       }
     } catch (e) {
       _errorMessage = 'Failed to load courses: $e';
-      print('Error fetching courses: $e'); // Debug log
+      //print('Error fetching courses: $e'); // Debug log
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -123,7 +123,7 @@ class QuizProvider with ChangeNotifier {
       await _initializeFirestore();
       if (!_isFirestoreInitialized || _firestore == null) {
         _errorMessage = 'Firestore not initialized';
-        print('Firestore not initialized in fetchChapters'); // Debug log
+        //print('Firestore not initialized in fetchChapters'); // Debug log
         notifyListeners();
         return;
       }
@@ -134,19 +134,19 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
 
     try {
-      print('Querying chapters for course: $courseId'); // Debug log
+      //print('Querying chapters for course: $courseId'); // Debug log
       final snapshot = await _firestore!
           .collection('practisemcq')
           .doc(courseId)
           .collection('chapters')
           .orderBy('order', descending: false)
           .get();
-      print('Chapters snapshot size: ${snapshot.size}'); // Debug log
-      print('Chapters snapshot docs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
+      //print('Chapters snapshot size: ${snapshot.size}'); // Debug log
+      //print('Chapters snapshot docs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
 
       _chapters = snapshot.docs.map((doc) {
         final data = doc.data();
-        print('Chapter document ID: ${doc.id}, Data: $data'); // Debug log
+        //print('Chapter document ID: ${doc.id}, Data: $data'); // Debug log
         return {
           'id': doc.id,
           'name': data['name'] ?? doc.id, // Fallback to ID if no name field
@@ -156,13 +156,13 @@ class QuizProvider with ChangeNotifier {
 
       if (_chapters.isEmpty) {
         _errorMessage = 'No chapters found for course $courseId';
-        print('No chapters found for course $courseId'); // Debug log
+        //print('No chapters found for course $courseId'); // Debug log
       } else {
-        print('Fetched ${_chapters.length} chapters for course $courseId: $_chapters'); // Debug log
+        //print('Fetched ${_chapters.length} chapters for course $courseId: $_chapters'); // Debug log
       }
     } catch (e) {
       _errorMessage = 'Failed to load chapters: $e';
-      print('Error fetching chapters: $e'); // Debug log
+      //print('Error fetching chapters: $e'); // Debug log
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -194,7 +194,7 @@ class QuizProvider with ChangeNotifier {
       await _initializeFirestore();
       if (!_isFirestoreInitialized || _firestore == null) {
         _errorMessage = 'Firestore not initialized';
-        print('Firestore not initialized in fetchQuestions'); // Debug log
+        //print('Firestore not initialized in fetchQuestions'); // Debug log
         notifyListeners();
         return false;
       }
@@ -209,11 +209,11 @@ class QuizProvider with ChangeNotifier {
       for (var chapterId in _selectedChapterIds) {
         final chapter = _chapters.firstWhere((ch) => ch['id'] == chapterId, orElse: () => {});
         if (chapter.isEmpty) {
-          print('Chapter $chapterId not found in chapters list'); // Debug log
+          //print('Chapter $chapterId not found in chapters list'); // Debug log
           continue;
         }
         final chapterName = chapter['name']?.toString() ?? chapterId;
-        print('Querying questions for course: $courseName, chapter: $chapterName'); // Debug log
+        //print('Querying questions for course: $courseName, chapter: $chapterName'); // Debug log
         final snapshot = await _firestore!
             .collection('practisemcq')
             .doc(courseName)
@@ -221,12 +221,12 @@ class QuizProvider with ChangeNotifier {
             .doc(chapterName)
             .collection('questions')
             .get();
-        print('Questions snapshot size: ${snapshot.size}'); // Debug log
-        print('Questions snapshot docs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
+        //print('Questions snapshot size: ${snapshot.size}'); // Debug log
+        //print('Questions snapshot docs: ${snapshot.docs.map((doc) => doc.id).toList()}'); // Debug log
 
         final questions = snapshot.docs.map((doc) {
           final data = doc.data();
-          print('Question document ID: ${doc.id}, Data: $data'); // Debug log
+          //print('Question document ID: ${doc.id}, Data: $data'); // Debug log
           return {
             'id': doc.id,
             ...data,
@@ -237,7 +237,7 @@ class QuizProvider with ChangeNotifier {
 
       if (allQuestions.isEmpty) {
         _errorMessage = 'No questions available in the selected chapters';
-        print('No questions found for selected chapters'); // Debug log
+        //print('No questions found for selected chapters'); // Debug log
         _isLoading = false;
         notifyListeners();
         return false;
@@ -264,7 +264,7 @@ class QuizProvider with ChangeNotifier {
       return true;
     } catch (e) {
       _errorMessage = 'Failed to load questions: $e';
-      print('Error fetching questions: $e'); // Debug log
+      ///print('Error fetching questions: $e'); // Debug log
       _isLoading = false;
       notifyListeners();
       return false;

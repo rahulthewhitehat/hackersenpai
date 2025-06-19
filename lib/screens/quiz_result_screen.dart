@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:async';
 import '../providers/quiz_provider.dart';
 import 'quiz_selection_screen.dart';
 
@@ -165,7 +164,7 @@ class _QuizResultScreenState extends State<QuizResultScreen>
           userAnswer != entry.value['correct_answer'];
     })
         .length;
-    final unanswered = quizProvider.totalQuestions - correct - incorrect;
+    final _ = quizProvider.totalQuestions - correct - incorrect;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
