@@ -21,29 +21,29 @@ class ThemeProvider with ChangeNotifier {
   static final lightTheme = ThemeData(
     brightness: Brightness.light,
     colorScheme: ColorScheme.light(
-      primary: Colors.blueAccent,
-      secondary: Colors.cyanAccent,
-      surface: Colors.grey[100]!,
+      primary: const Color(0xFFF4511E), // Vibrant orange as primary
+      secondary: const Color(0xFFFFB300), // Amber as secondary/accent
+      surface: const Color(0xFFFFF3E0), // Light orange-tinted surface
       onPrimary: Colors.white,
-      onSecondary: Colors.black,
+      onSecondary: Colors.black87,
       onSurface: Colors.black87,
-      error: Colors.red,
-      errorContainer: Colors.orange,
-      surfaceContainer: Colors.grey[200]!,
-      surfaceContainerHigh: Colors.grey[300]!,
-      outlineVariant: Colors.grey[400]!,
+      error: const Color(0xFFD32F2F), // Deep red for errors
+      errorContainer: const Color(0xFFFF8A65), // Soft orange for error containers
+      surfaceContainer: const Color(0xFFFFE0B2), // Light orange container
+      surfaceContainerHigh: const Color(0xFFFFD180), // Slightly darker orange
+      outlineVariant: const Color(0xFFE0E0E0), // Neutral gray for outlines
     ),
-    scaffoldBackgroundColor: Colors.grey[100],
+    scaffoldBackgroundColor: const Color(0xFFFFF3E0), // Light orange background
     textTheme: const TextTheme(
-      titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5),
-      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+      titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: Color(0xFF3E2723)),
+      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF3E2723)),
+      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF3E2723)),
+      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFF3E2723)),
     ),
-    iconTheme: const IconThemeData(color: Colors.black87),
+    iconTheme: const IconThemeData(color: Color(0xFF3E2723)), // Dark brown for icons
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.blueAccent),
+        backgroundColor: WidgetStateProperty.all(const Color(0xFFF4511E)), // Orange buttons
         foregroundColor: WidgetStateProperty.all(Colors.white),
         padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
         shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -51,41 +51,42 @@ class ThemeProvider with ChangeNotifier {
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: Color(0xFFF4511E), // Orange FAB
       foregroundColor: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color(0xFFF4511E), // Orange app bar
+      foregroundColor: Colors.white,
     ),
   );
 
   static final darkTheme = ThemeData(
     brightness: Brightness.dark,
     colorScheme: ColorScheme.dark(
-      primary: Colors.blueAccent.shade400,
-      secondary: Colors.cyanAccent.shade400,
-      surface: Colors.grey[900]!,
-      onPrimary: Colors.black,
-      onSecondary: Colors.white,
+      primary: const Color(0xFFFF5722), // Slightly brighter orange for dark mode
+      secondary: const Color(0xFFFFCA28), // Brighter amber for dark mode
+      surface: const Color(0xFF3E2723), // Dark brown surface
+      onPrimary: Colors.white,
+      onSecondary: Colors.black87,
       onSurface: Colors.white,
-      error: Colors.redAccent,
-      errorContainer: Colors.orange[700]!,
-      surfaceContainer: Colors.grey[800]!,
-      surfaceContainerHigh: Colors.grey[700]!,
-      outlineVariant: Colors.grey[600]!,
+      error: const Color(0xFFEF5350), // Red accent for errors
+      errorContainer: const Color(0xFFE64A19), // Darker orange for error containers
+      surfaceContainer: const Color(0xFF4E342E), // Darker brown container
+      surfaceContainerHigh: const Color(0xFF5D4037), // Slightly lighter brown
+      outlineVariant: const Color(0xFF757575), // Gray for outlines
     ),
-    scaffoldBackgroundColor: Colors.grey[900],
+    scaffoldBackgroundColor: const Color(0xFF3E2723), // Dark brown background
     textTheme: const TextTheme(
-      titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5),
-      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
-      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400),
+      titleLarge: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, letterSpacing: -0.5, color: Colors.white),
+      titleMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+      bodyMedium: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white),
+      bodySmall: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Colors.white70),
     ),
-    iconTheme: const IconThemeData(color: Colors.white),
+    iconTheme: const IconThemeData(color: Colors.white), // White icons for dark mode
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.blueAccent.shade400),
+        backgroundColor: WidgetStateProperty.all(const Color(0xFFFF5722)), // Brighter orange buttons
         foregroundColor: WidgetStateProperty.all(Colors.white),
         padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
         shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
@@ -93,12 +94,13 @@ class ThemeProvider with ChangeNotifier {
       ),
     ),
     floatingActionButtonTheme: const FloatingActionButtonThemeData(
-      backgroundColor: Colors.blueAccent,
+      backgroundColor: Color(0xFFFF5722), // Brighter orange FAB
       foregroundColor: Colors.white,
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
-      backgroundColor: Colors.transparent,
+      backgroundColor: Color(0xFFFF5722), // Orange app bar
+      foregroundColor: Colors.white,
     ),
   );
 }

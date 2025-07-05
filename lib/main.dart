@@ -20,6 +20,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized(
   );
   await Firebase.initializeApp(
+    name: 'hackersenpai',
       options: DefaultFirebaseOptions.currentPlatform
   );
 

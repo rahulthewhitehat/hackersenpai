@@ -1,49 +1,34 @@
 {
   "project_info": {
-    "project_number": "699455540180",
-    "project_id": "mr-ca-virtuals",
-    "storage_bucket": "mr-ca-virtuals.firebasestorage.app"
+    "project_number": "681869731426",
+    "project_id": "mr-hacker-a3f2b",
+    "storage_bucket": "mr-hacker-a3f2b.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:699455540180:android:a6cb466ca56063781d6441",
+        "mobilesdk_app_id": "1:681869731426:android:9bd34b39b77991b76e133b",
         "android_client_info": {
-          "package_name": "com.kirubakaran.mrcavirtuals"
+          "package_name": "com.thewhitehats.hackersenpai"
         }
       },
       "oauth_client": [
         {
-          "client_id": "699455540180-la6vvtahcfg6oujh5f4ntj8can613f0c.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.kirubakaran.mrcavirtuals",
-            "certificate_hash": "92761d957921cc294ab1e829ca6fb9631dde2458"
-          }
-        },
-        {
-          "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+          "client_id": "681869731426-ptvsqm2hancpogufu2p2nogobo69cn37.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDzZZsCgU0hTXQUGBjBtswjigB4uUnIAB0"
+          "current_key": "AIzaSyD9HoZ1XHucuKySYhL8RxmDeTwXhuV4WFE"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+              "client_id": "681869731426-ptvsqm2hancpogufu2p2nogobo69cn37.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "699455540180-52rcfpuu7g6bo95g50mdsqeig71i2j93.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.kirubakaran.mrcavirtuals"
-              }
             }
           ]
         }
@@ -51,35 +36,28 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:699455540180:android:b669a1a6fe2a2c2a1d6441",
+        "mobilesdk_app_id": "1:681869731426:android:0c8faf86a8c074996e133b",
         "android_client_info": {
-          "package_name": "com.kirubakaran.mrcavirtualsadmin"
+          "package_name": "com.thewhitehats.hackersenpaiadmin"
         }
       },
       "oauth_client": [
         {
-          "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+          "client_id": "681869731426-ptvsqm2hancpogufu2p2nogobo69cn37.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDzZZsCgU0hTXQUGBjBtswjigB4uUnIAB0"
+          "current_key": "AIzaSyD9HoZ1XHucuKySYhL8RxmDeTwXhuV4WFE"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "699455540180-v66sap0mjnbv1q7j1fi0drcf5hgbgeu3.apps.googleusercontent.com",
+              "client_id": "681869731426-ptvsqm2hancpogufu2p2nogobo69cn37.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "699455540180-52rcfpuu7g6bo95g50mdsqeig71i2j93.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.kirubakaran.mrcavirtuals"
-              }
             }
           ]
         }
