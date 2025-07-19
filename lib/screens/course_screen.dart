@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:mrcavirtuals/screens/video_playlist_screen_windows.dart';
+import 'package:hackersenpai/screens/video_playlist_screen_windows.dart';
 import 'package:provider/provider.dart';
 import '../models/chapter_model.dart';
 import '../providers/student_provider.dart';

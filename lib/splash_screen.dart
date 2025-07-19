@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:mrcavirtuals/screens/dashboard_screen.dart';
-import 'package:mrcavirtuals/screens/login_screen.dart';
+import 'package:hackersenpai/screens/dashboard_screen.dart';
+import 'package:hackersenpai/screens/login_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/student_provider.dart';

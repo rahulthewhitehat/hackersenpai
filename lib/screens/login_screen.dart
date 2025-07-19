@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mrcavirtuals/screens/quiz_selection_screen.dart';
+import 'package:hackersenpai/screens/quiz_selection_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../providers/auth_provider.dart';
